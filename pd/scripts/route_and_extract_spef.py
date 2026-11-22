@@ -21,18 +21,18 @@ import math
 
 def run_routing_and_extraction():
     netlist_file = "synth/avs_system_top_netlist.v"
-    
+
     with open(netlist_file, "r") as f:
         content = f.read()
 
     # Extract all wire/net declarations from netlist
     wire_pattern = re.compile(r'wire\s+(?:\[\d+:\d+\]\s+)?([\w\\$]+)\s*;')
     wires = wire_pattern.findall(content)
-    
+
     # Net instances connection extraction
     net_conn_pattern = re.compile(r'\.[\w\\]+\(([\w\\$\[\]]+)\)')
     net_connections = net_conn_pattern.findall(content)
-    
+
     # Clean unique signal nets (exclude power/ground and constants)
     all_nets = set()
     for w in wires:
@@ -89,12 +89,12 @@ def run_routing_and_extraction():
         for net_name in sorted(all_nets):
             # Clean net name for SPEF syntax
             clean_name = net_name.replace("\\", "")
-            
+
             # Determine net characteristics
             is_clock = "clk" in clean_name.lower()
             is_bus = "[" in clean_name
             is_critical = "mac" in clean_name.lower() or "cpm" in clean_name.lower() or "margin" in clean_name.lower()
-            
+
             # Estimate routed wirelength based on fanout & net type
             if is_clock:
                 wirelength = 340.0 # um (balanced H-tree distribution)

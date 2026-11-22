@@ -84,14 +84,14 @@ module tb_avs_top;
 
         // Run computation with idle activity
         repeat (100) @(posedge clk_core);
-        $display("[T=%0t] MAC Result (Idle mode): 0x%08h | DAC Voltage Code = %0d", 
+        $display("[T=%0t] MAC Result (Idle mode): 0x%08h | DAC Voltage Code = %0d",
                  $time, mac_result, dac_voltage_code);
 
         // Trigger dynamic stress mode (high activity burst)
         $display("[T=%0t] Activating STRESS MODE (pseudo-random LFSR burst)...", $time);
         stress_mode = 1;
         repeat (200) @(posedge clk_core);
-        $display("[T=%0t] MAC Result (Stress mode): 0x%08h | Loop Settled = %0b", 
+        $display("[T=%0t] MAC Result (Stress mode): 0x%08h | Loop Settled = %0b",
                  $time, mac_result, loop_settled);
 
         // De-stress

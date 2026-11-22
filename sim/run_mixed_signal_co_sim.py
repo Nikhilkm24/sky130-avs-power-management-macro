@@ -32,7 +32,7 @@ def run_transistor_energy_benchmarks():
         "fixed": os.path.join(sim_dir, "energy_benchmark_fixed.sp"),
         "adapt": os.path.join(sim_dir, "energy_benchmark_adaptive.sp")
     }
-    
+
     results = {}
     for key, sp_file in benchmarks.items():
         if not os.path.exists(sp_file):
@@ -41,7 +41,7 @@ def run_transistor_energy_benchmarks():
         cmd = ["ngspice", "-b", os.path.basename(sp_file)]
         proc = subprocess.run(cmd, cwd=sim_dir, capture_output=True, text=True)
         stdout = proc.stdout
-        
+
         metrics = {}
         for line in stdout.splitlines():
             m_esup = re.search(r"e_supply_\w+\s*=\s*([0-9.eE+-]+)", line)
@@ -54,9 +54,9 @@ def run_transistor_energy_benchmarks():
             if m_opcor: metrics["e_op_core"] = float(m_opcor.group(1))
             m_vc = re.search(r"v\(vdd_core\)\[2000\]\s*=\s*([0-9.eE+-]+)", line)
             if m_vc: metrics["v_core"] = float(m_vc.group(1))
-            
+
         results[key] = metrics
-        
+
     return results
 
 def run_mixed_signal_simulation():

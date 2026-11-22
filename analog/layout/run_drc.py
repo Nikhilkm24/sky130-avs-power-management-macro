@@ -9,11 +9,16 @@ Executes real Magic batch DRC on:
 Outputs:
 - Raw tool execution log: reports/analog_drc.log
 - Sign-off report: reports/analog_drc.rpt
+
+Safety Guarantee:
+- Fail-Closed: If Magic fails to run, returns non-zero, or if cell DRC counts
+  cannot be parsed, this script raises an immediate error and flags FAILED.
 """
 
 import os
 import subprocess
 import re
+import sys
 
 def run_analog_drc():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +29,14 @@ def run_analog_drc():
     drc_tcl = os.path.join(script_dir, "drc_batch.tcl")
     drc_log = os.path.join(reports_dir, "analog_drc.log")
     drc_rpt = os.path.join(reports_dir, "analog_drc.rpt")
+
+    # Verify input layout files exist
+    dac_mag = os.path.join(script_dir, "dac_5bit_array.mag")
+    pmos_mag = os.path.join(script_dir, "pmos_pass_2000u.mag")
+    if not os.path.exists(dac_mag):
+        raise FileNotFoundError(f"Missing layout file: {dac_mag}. Run generate_dac_layout.py first.")
+    if not os.path.exists(pmos_mag):
+        raise FileNotFoundError(f"Missing layout file: {pmos_mag}. Run generate_pmos_pass_layout.py first.")
 
     # Magic batch DRC TCL script
     tcl_content = """# Batch DRC Script for Sky130 Analog Layouts
@@ -89,21 +102,31 @@ quit -noprompt
     with open(drc_log, "w") as f:
         f.write(full_output)
 
-    # Parse counts
+    # Fail-closed checks on subprocess execution
+    if res.returncode != 0:
+        raise RuntimeError(f"Magic DRC process failed with exit code {res.returncode}. See {drc_log}")
+
+    # Parse counts with strict validation (NO fail-open fallback to 0)
     dac_err_match = re.search(r"CELL:\s+dac_5bit_array\s+DRC_ERRORS:\s+(\d+)", full_output)
     pmos_err_match = re.search(r"CELL:\s+pmos_pass_2000u\s+DRC_ERRORS:\s+(\d+)", full_output)
 
-    dac_errors = int(dac_err_match.group(1)) if dac_err_match else 0
-    pmos_errors = int(pmos_err_match.group(1)) if pmos_err_match else 0
+    if not dac_err_match:
+        raise RuntimeError(f"FATAL: Magic output missing DRC count for dac_5bit_array! Raw log:\n{full_output[:500]}")
+    if not pmos_err_match:
+        raise RuntimeError(f"FATAL: Magic output missing DRC count for pmos_pass_2000u! Raw log:\n{full_output[:500]}")
+
+    dac_errors = int(dac_err_match.group(1))
+    pmos_errors = int(pmos_err_match.group(1))
     total_errors = dac_errors + pmos_errors
 
     with open(drc_rpt, "w") as f:
         f.write("==================================================================\n")
         f.write("   SKY130 ANALOG LAYOUT DRC (DESIGN RULE CHECK) SIGN-OFF REPORT  \n")
         f.write("==================================================================\n")
-        f.write(f"Verification Engine : Magic 8.3 (Revision 105) Batch DRC\n")
+        f.write(f"Verification Engine : Magic 8.3 Batch DRC\n")
         f.write(f"Technology File     : sky130A.tech (SkyWater 130nm High-Density)\n")
-        f.write(f"Raw Execution Log   : reports/analog_drc.log\n\n")
+        f.write(f"Raw Execution Log   : reports/analog_drc.log\n")
+        f.write(f"Exit Status         : Magic process returned code 0 (Success)\n\n")
         f.write(f"{'Cell Name':<24} | {'Description':<34} | {'DRC Errors':<12} | {'Status'}\n")
         f.write("-" * 80 + "\n")
         f.write(f"{'dac_5bit_array':<24} | {'5-Bit Common-Centroid DAC (32-R)':<34} | {dac_errors:<12} | {'PASSED' if dac_errors == 0 else 'FAILED'}\n")

@@ -1,13 +1,16 @@
 // ==============================================================================
 // Module: avs_controller.v
 // Project: Closed-Loop AVS Power Management Macro on Sky130
-// Description: Closed-Loop Adaptive Voltage Scaling FSM Controller.
+// Description: Closed-Loop Adaptive Voltage Scaling 6-State FSM Controller.
 //              Features:
+//              - 6-State FSM: ST_RESET, ST_WAIT_SETTLE, ST_SAMPLE,
+//                ST_EVALUATE, ST_UPDATE_STEP, ST_EMERGENCY.
 //              - Rate-limited stepping (max +/- 1 LSB per update interval)
 //              - Settling-time timer (waits for analog LDO transient before sampling)
 //              - Configurable hysteresis window to prevent limit-cycle hunting
 //              - Programmable floor (0.90V) and ceiling (1.50V) safety clamping
-//              - Instantaneous asynchronous emergency fallback to safe ceiling
+//              - Synchronous emergency override: Evaluated on every rising edge of
+//                clk_ctrl (latency <= 1 controller clock cycle = 80 ns at 12.5 MHz)
 // ==============================================================================
 
 `timescale 1ns / 1ps

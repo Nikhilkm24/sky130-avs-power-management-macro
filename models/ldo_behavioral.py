@@ -30,14 +30,14 @@ class LDOBehavioralModel:
         self.dac_bits = dac_bits
         self.max_code = (1 << dac_bits) - 1
         self.step_size = (v_max - v_min) / float(self.max_code)
-        
+
         self.settling_time = settling_time_us * 1e-6
         self.zeta = damping_ratio
         # Natural frequency from settling time (approx 4 / (zeta * omega_n))
         self.omega_n = 4.0 / (self.zeta * self.settling_time)
         self.r_out = r_out
         self.i_q = i_quiescent_ua * 1e-6
-        
+
         # State variables
         self.v_out = v_max  # Start at safe ceiling voltage
         self.v_dot = 0.0
@@ -58,14 +58,14 @@ class LDOBehavioralModel:
         """
         # Load regulation voltage drop
         v_steady = self.target_v - (i_load * self.r_out)
-        
+
         # Second-order differential equation: v'' + 2*zeta*wn*v' + wn^2*(v - v_target) = 0
         v_ddot = (self.omega_n ** 2) * (v_steady - self.v_out) - 2.0 * self.zeta * self.omega_n * self.v_dot
-        
+
         # Euler integration
         self.v_dot += v_ddot * dt
         self.v_out += self.v_dot * dt
-        
+
         # Clamp to realistic physical rail limits [0V, 1.8V]
         self.v_out = np.clip(self.v_out, 0.0, 1.80)
         return self.v_out
@@ -84,20 +84,20 @@ if __name__ == "__main__":
     print("=== LDO Behavioral Model Test ===")
     print(f"Voltage Range: {ldo.v_min:.2f}V to {ldo.v_max:.2f}V across {ldo.max_code+1} codes")
     print(f"Step Size: {ldo.step_size*1e3:.2f} mV / LSB")
-    
+
     # Test step from code 31 (1.50V) down to code 10 (1.09V)
     target = ldo.set_voltage_code(10)
     print(f"Set Code 10 -> Target Voltage: {target:.3f}V")
-    
+
     dt = 1e-8  # 10 ns
     time_points = []
     voltages = []
-    
+
     for step_idx in range(200):
         t = step_idx * dt
         v = ldo.step(dt, i_load=15e-3)
         time_points.append(t * 1e6)
         voltages.append(v)
-        
+
     print(f"Final settled voltage after 2.0 us: {voltages[-1]:.4f}V (Error: {abs(voltages[-1] - (target - 15e-3*0.15))*1e3:.2f} mV)")
     print("LDO Behavioral Model verification passed!")

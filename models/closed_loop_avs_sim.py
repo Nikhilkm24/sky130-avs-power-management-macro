@@ -24,7 +24,7 @@ def run_closed_loop_simulation():
     dt = 10e-9            # 10 ns time step
     steps = int(t_stop / dt)
     time_arr = np.linspace(0, t_stop * 1e6, steps) # in microseconds
-    
+
     # Initialize Analog LDO Model
     ldo = LDOBehavioralModel(
         v_min=0.90,
@@ -34,7 +34,7 @@ def run_closed_loop_simulation():
         damping_ratio=0.72,
         r_out=0.20
     )
-    
+
     # Timing & Delay Model Parameters (Calibrated for Sky130 MAC Datapath)
     # Target: 75 MHz clock (T_clk = 13.333 ns).
     # At nominal V_CORE = 1.055V (DAC code 8), delay = 12.88 ns, slack = +0.45 ns -> Margin = 2 taps.
@@ -46,16 +46,16 @@ def run_closed_loop_simulation():
     tap_delay = 0.18e-9   # 180 ps per CPM buffer tap
     num_taps = 8
     target_margin = 2     # Target 2 taps of setup guardband
-    
+
     # FSM Controller Parameters
     f_ctrl = 12.5e6       # 12.5 MHz controller clock (T_ctrl = 80 ns)
     ctrl_period = 1.0 / f_ctrl
     settle_wait_cycles = 8 # 8 cycles * 80 ns = 640 ns (> LDO settling time of 400 ns)
-    
+
     # Digital Load Power Model
     c_eff = 120e-12       # 120 pF switched capacitance of MAC
     i_leak_nom = 45e-6    # 45 uA nominal leakage at 1.50V
-    
+
     # Controller State Variables
     v_code = 31           # Boot at safe maximum voltage ceiling (1.50V)
     ldo.set_voltage_code(v_code)
@@ -63,7 +63,7 @@ def run_closed_loop_simulation():
     fsm_state = "WAIT_SETTLE"
     settled = False
     timing_hazard = False
-    
+
     # Tracing Arrays
     v_core_trace = np.zeros(steps)
     v_target_trace = np.zeros(steps)
@@ -74,12 +74,12 @@ def run_closed_loop_simulation():
     settled_trace = np.zeros(steps)
     p_avs_trace = np.zeros(steps)
     p_fixed_trace = np.zeros(steps)
-    
+
     last_ctrl_eval = 0.0
-    
+
     for i in range(steps):
         t = i * dt
-        
+
         # 1. Define Dynamic Load Current Profile & Injected Perturbations:
         # 0 - 28 us: Idle compute (5 mA, 10% activity) -> Closed loop steps down to 1.055V
         # 28 - 42 us: Heavy MAC compute burst (38 mA, 80% activity) -> Induces ~30 mV droop
@@ -101,9 +101,9 @@ def run_closed_loop_simulation():
             i_load = 5e-3
             alpha_act = 0.10
             v_sag = 0.0
-            
+
         i_load_trace[i] = i_load * 1e3 # mA
-        
+
         # 2. Advance Analog LDO with dynamic load and disturbance
         # Apply external droop if present
         v_core = ldo.step(dt, i_load) - v_sag
@@ -111,35 +111,35 @@ def run_closed_loop_simulation():
         v_core_trace[i] = v_core
         v_target_trace[i] = ldo.target_v
         code_trace[i] = v_code
-        
+
         # 3. Critical Path Monitor (CPM) Delay Calculation
         if v_core > (vth + 0.05):
             path_delay = k_delay * v_core / ((v_core - vth) ** alpha)
         else:
             path_delay = 25.0e-9 # Severe timing failure
-            
+
         slack = t_clk - path_delay
         raw_margin = int(np.floor(slack / tap_delay))
         clamped_margin = int(np.clip(raw_margin, 0, num_taps))
         margin_trace[i] = clamped_margin
-        
+
         # 4. Instantaneous Power Dissipation (Digital Core + LDO Bias)
         # Fixed signoff power (operating continuously at 1.50V worst-case)
         p_dyn_fixed = alpha_act * c_eff * (1.50 ** 2) * f_core
         p_leak_fixed = 1.50 * i_leak_nom
         p_fixed = p_dyn_fixed + p_leak_fixed + (1.80 * 75e-6) # LDO quiescent current
         p_fixed_trace[i] = p_fixed * 1e3 # mW
-        
+
         # AVS Dynamic Power (scaling with actual regulated v_core)
         p_dyn_avs = alpha_act * c_eff * (v_core ** 2) * f_core
         p_leak_avs = v_core * i_leak_nom * np.exp((v_core - 1.50) / 0.15)
         p_avs = p_dyn_avs + p_leak_avs + (1.80 * 75e-6)
         p_avs_trace[i] = p_avs * 1e3 # mW
-        
+
         # 5. AVS Controller FSM Evaluation (clocked on clk_ctrl)
         if (t - last_ctrl_eval) >= ctrl_period:
             last_ctrl_eval = t
-            
+
             # Emergency Hazard: If margin drops to 0, immediate 1-cycle override!
             if clamped_margin == 0:
                 v_code = 31
@@ -200,7 +200,7 @@ def run_closed_loop_simulation():
     # 7. Generate Comprehensive Multi-Panel Engineering Plot
     os.makedirs("reports", exist_ok=True)
     fig, axes = plt.subplots(4, 1, figsize=(12, 11), sharex=True)
-    
+
     # Panel 1: Regulated VDD_CORE Voltage
     axes[0].plot(time_arr, v_core_trace, 'b-', linewidth=2.0, label='Actual VDD_CORE (LDO Output)')
     axes[0].plot(time_arr, v_target_trace, 'r--', linewidth=1.5, label='Commanded DAC Target')

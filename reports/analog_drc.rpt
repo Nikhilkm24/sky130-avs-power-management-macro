@@ -1,9 +1,10 @@
 ==================================================================
    SKY130 ANALOG LAYOUT DRC (DESIGN RULE CHECK) SIGN-OFF REPORT  
 ==================================================================
-Verification Engine : Magic 8.3 (Revision 105) Batch DRC
+Verification Engine : Magic 8.3 Batch DRC
 Technology File     : sky130A.tech (SkyWater 130nm High-Density)
 Raw Execution Log   : reports/analog_drc.log
+Exit Status         : Magic process returned code 0 (Success)
 
 Cell Name                | Description                        | DRC Errors   | Status
 --------------------------------------------------------------------------------

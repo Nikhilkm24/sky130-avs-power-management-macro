@@ -13,18 +13,18 @@ all: sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal mode
 
 help:
 	@echo "Available build targets:"
-	@echo "  make sim            - Run digital functional testbenches with Icarus Verilog"
+	@echo "  make sim            - Run all 4 digital RTL testbenches with Icarus Verilog"
 	@echo "  make analog         - Run ngspice DC, AC, and transient simulations (BGR, DAC, LDO)"
 	@echo "  make synth          - Synthesize digital macro to Sky130 HD using Yosys"
 	@echo "  make sta            - Run pre-route multi-corner OpenSTA timing analysis (TT, SS, FF)"
 	@echo "  make pd             - Run digital physical design (Floorplan, PDN, Placement, CTS, Route, SPEF)"
 	@echo "  make post_route_sta - Run post-route OpenSTA timing analysis with back-annotated SPEF"
 	@echo "  make layout         - Generate custom analog layouts in Magic (DAC matrix & PMOS pass)"
-	@echo "  make drc            - Run Magic Design Rule Checking on analog layouts"
-	@echo "  make lvs            - Run Netgen LVS comparing layout against schematic"
-	@echo "  make pex            - Run Parasitic Extraction (PEX) & post-layout comparison"
+	@echo "  make drc            - Run Magic Design Rule Checking on analog layouts (fail-closed)"
+	@echo "  make lvs            - Run structural device/finger audit on Magic extracted layouts"
+	@echo "  make pex            - Run Magic Parasitic Extraction (PEX) & post-layout comparison"
 	@echo "  make mixed_signal   - Run top-level mixed-signal SPICE and closed-loop co-simulation"
-	@echo "  make model          - Run closed-loop co-simulation and generate transient energy plots"
+	@echo "  make model          - Run closed-loop co-simulation and CPM timing calibration"
 	@echo "  make pvt_matrix     - Display 6-corner PVT sign-off matrix report"
 	@echo "  make energy_curves  - Generate energy-per-op vs voltage scaling trade-off curves"
 	@echo "  make validate       - Run complete Stage 1-5 validation suite"
@@ -32,12 +32,12 @@ help:
 	@echo "  make clean          - Clean generated waveform files and logs"
 	@echo ""
 	@echo "Standard developer aliases (inspired by top-10 open-source repositories):"
-	@echo "  make test           - Run fast testbenches (RTL simulation and behavioral model)"
+	@echo "  make test           - Run fast regression testbenches (RTL simulations and models)"
 	@echo "  make lint           - Lint RTL sources using Icarus Verilog strict syntax check"
 	@echo "  make check          - Fast sanity check combining RTL sim, model, and PVT matrix"
 	@echo "  make build          - Build digital gate-level and physical design database (synth + pd)"
 	@echo "  make report         - Display PVT sign-off summary matrix"
-	@echo "  make fmt            - Verify file formatting and code conventions"
+	@echo "  make fmt            - Inspect and validate codebase compliance with .editorconfig"
 
 test: sim model
 	@echo "--> Test suite passed successfully."
@@ -59,13 +59,17 @@ report: pvt_matrix
 
 fmt:
 	@echo "--> Checking codebase compliance with .editorconfig guidelines..."
-	@python3 -c "import sys; print('Python runtime:', sys.version.split()[0]); print('Codebase complies with .editorconfig standards.')"
+	@python3 scripts/check_formatting.py
 
 sim:
 	@echo "--> Running digital RTL testbenches..."
 	@mkdir -p sim reports
 	iverilog -g2012 -o sim/tb_controller.vvp rtl/controller/avs_controller.v sim/tb_controller.v
 	vvp sim/tb_controller.vvp
+	iverilog -g2012 -o sim/tb_cpm.vvp rtl/cpm/critical_path_monitor.v sim/tb_cpm.v
+	vvp sim/tb_cpm.vvp
+	iverilog -g2012 -o sim/tb_cdc.vvp rtl/level_shifter/level_shifter.v sim/tb_cdc.v
+	vvp sim/tb_cdc.vvp
 	iverilog -g2012 -o sim/tb_avs_top.vvp rtl/level_shifter/level_shifter.v rtl/load/pipelined_mac_load.v rtl/cpm/critical_path_monitor.v rtl/controller/avs_controller.v rtl/top/avs_system_top.v sim/tb_avs_top.v
 	vvp sim/tb_avs_top.vvp
 
@@ -118,11 +122,11 @@ drc:
 	python3 analog/layout/run_drc.py
 
 lvs:
-	@echo "--> Running Netgen Layout Versus Schematic (LVS)..."
+	@echo "--> Running Magic Structural Device LVS Audit..."
 	python3 analog/layout/run_lvs.py
 
 pex:
-	@echo "--> Running Parasitic Extraction (PEX) & comparison..."
+	@echo "--> Running Magic Parasitic Extraction (PEX) & ngspice comparison..."
 	python3 analog/layout/run_pex.py
 
 mixed_signal:
@@ -132,9 +136,10 @@ mixed_signal:
 	@echo "Mixed-signal integration verified: reports/mixed_signal_transient.png."
 
 model:
-	@echo "--> Running closed-loop co-simulation..."
+	@echo "--> Running closed-loop co-simulation and CPM calibration..."
 	@mkdir -p reports
 	python3 models/closed_loop_avs_sim.py
+	python3 models/cpm_calibration.py
 
 pvt_matrix:
 	@echo "--> Checking PVT Cross-Corner Sign-off Matrix..."
@@ -147,8 +152,7 @@ energy_curves:
 
 validate: all
 	@echo "=================================================================="
-	@echo "  Stage 1-5 Complete Validation Passed Successfully!             "
-	@echo "  Summary: 41.43% Energy Reduction, 0 DRC/LVS, Post-Route Signed  "
+	@echo "  Stage 1-5 Complete Validation Suite Executed Successfully!      "
 	@echo "=================================================================="
 
 clean:

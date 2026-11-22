@@ -8,7 +8,7 @@
 [![CI: Automated Verification](https://github.com/Nikhilkm24/sky130-avs-power-management-macro/actions/workflows/ci.yml/badge.svg)](https://github.com/Nikhilkm24/sky130-avs-power-management-macro/actions/workflows/ci.yml)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
-[**Documentation Index**](docs/index.md) | [**System Architecture**](docs/SYSTEM_ARCHITECTURE.md) | [**Specification**](docs/SPECIFICATION.md) | [**Verification Plan**](docs/verification_plan.md) | [**Build Guide**](BUILDING.md) | [**Contributing**](CONTRIBUTING.md) | [**Changelog**](CHANGELOG.md)
+[**Documentation Index**](docs/index.md) | [**Verification Claim Audit**](reports/VERIFICATION_CLAIM_AUDIT.md) | [**System Architecture**](docs/SYSTEM_ARCHITECTURE.md) | [**Specification**](docs/SPECIFICATION.md) | [**Verification Plan**](docs/verification_plan.md) | [**Build Guide**](BUILDING.md) | [**Contributing**](CONTRIBUTING.md) | [**Changelog**](CHANGELOG.md)
 
 ---
 
@@ -265,6 +265,7 @@ A rigorous assessment of this implementation reveals several engineering challen
 3. **Delay Quantization & Resolution**: The CPM delay line uses discrete buffer taps spaced at $\approx 180\text{ ps}$. The finite resolution introduces a quantization guard-band: the controller must target at least 2 taps ($360\text{ ps}$) of margin to prevent hunting between adjacent codes.
 4. **Physical Design Implementation Flow**: Physical design DEF floorplans and SPEF interconnect parasitic netlists were produced via custom Python scripts modeling SkyWater 130nm layout rules and metal stack RC equations, rather than an end-to-end automated OpenROAD / OpenLane execution. OpenSTA was subsequently used to evaluate post-route timing closure against the extracted SPEF.
 5. **Silicon Validation Boundary**: All results presented in this repository represent simulations (ngspice-42), gate-level synthesis (Yosys 0.33), timing analyses (OpenSTA 3.1.0), and physical verifications (Magic 8.3). This design has not been fabricated in silicon or validated on a physical test bench.
+6. **Verification Integrity and Claim Classification**: For a transparent, line-by-line categorization of all claims, models, and scripts into tool-verified, simplified-model, modeled-extrapolated, and corrected defects, consult the [**Verification Claim Audit Report**](reports/VERIFICATION_CLAIM_AUDIT.md).
 
 ---
 
@@ -286,31 +287,33 @@ sky130-avs-power-management-macro/
 ├── CHANGELOG.md                     # User-facing and engineering release notes
 ├── README.md                        # Primary technical documentation
 ├── analog/                          # Analog subsystem netlists, layouts, and PEX
-│   ├── bgr/bgr_1v2.sp               # Transistor-level 1.20V Bandgap Reference
+│   ├── bgr/bgr_1v2.sp               # Transistor-level 1.20V Bandgap Reference (Level-1 model)
 │   ├── dac/dac_5bit_rstring.sp      # 5-bit Resistor-String DAC netlist
 │   ├── dac/verify_dac_linearity.py  # DNL/INL extraction script
 │   ├── ldo/ldo_core.sp              # Transistor-level LDO with Middlebrook probe
 │   └── layout/                      # Custom Magic layout files and PEX runners
 │       ├── dac_5bit_array.mag       # 8x4 common-centroid DAC layout
 │       ├── pmos_pass_2000u.mag      # 64-finger PMOS pass device layout
-│       ├── run_drc.py               # Magic 8.3 batch DRC execution script
-│       ├── run_lvs.py               # Netlist extraction and LVS script
-│       └── run_pex.py               # Parasitic extraction and post-layout SPICE
+│       ├── run_drc.py               # Magic 8.3 batch DRC execution script (fail-closed)
+│       ├── run_lvs.py               # Magic structural device/finger audit script
+│       └── run_pex.py               # Magic parasitic extraction and post-layout SPICE
 ├── rtl/                             # Synthesizable Verilog RTL source files
-│   ├── controller/avs_controller.v  # Closed-loop AVS FSM controller
-│   ├── cpm/critical_path_monitor.v  # Synthesizable replica delay line and CPM
+│   ├── controller/avs_controller.v  # Closed-loop AVS 6-state FSM controller
+│   ├── cpm/critical_path_monitor.v  # Synthesizable replica delay line & 8-tap CPM
 │   ├── load/pipelined_mac_load.v    # 16-bit pipelined MAC workload with LFSR
-│   ├── level_shifter/level_shifter.v# Sky130 multi-voltage level shifters and CDC
+│   ├── level_shifter/level_shifter.v# Dual-rail level shifters & Gray-code CDC synchronizer
 │   └── top/avs_system_top.v         # Integrated digital top-level macro
 ├── sim/                             # Testbenches and mixed-signal simulation
 │   ├── tb_controller.v              # FSM controller standalone testbench
+│   ├── tb_cpm.v                     # Critical Path Monitor standalone testbench
+│   ├── tb_cdc.v                     # Coherent Gray-code CDC testbench
 │   ├── tb_avs_top.v                 # Integrated digital top testbench
 │   ├── mixed_signal_top.sp          # Transistor-level mixed-signal SPICE deck
 │   ├── run_mixed_signal_co_sim.py   # Closed-loop co-simulation engine
 │   ├── energy_benchmark_fixed.sp    # Fixed 1.50V SPICE energy benchmark
 │   └── energy_benchmark_adaptive.sp # Adaptive 1.054V SPICE energy benchmark
 ├── sta/                             # Static Timing Analysis
-│   ├── sdc/avs_top.sdc              # Dual-clock SDC timing constraints
+│   ├── sdc/avs_top.sdc              # Dual-clock SDC timing constraints (75.0 MHz)
 │   ├── scripts/run_sta_corners.tcl  # OpenSTA multi-corner execution script
 │   └── spice_sta_correlate/         # SPICE vs STA delay correlation script
 ├── synth/                           # Logic synthesis
@@ -322,11 +325,18 @@ sky130-avs-power-management-macro/
 ├── models/                          # Behavioral and numerical modeling
 │   ├── ldo_behavioral.py            # 2nd-order analog LDO transfer function
 │   ├── closed_loop_avs_sim.py       # Full closed-loop dynamic simulation
+│   ├── cpm_calibration.py           # CPM replica vs MAC critical path calibration
 │   └── generate_energy_tradeoff_curves.py # Voltage scaling energy trade-off generator
+├── scripts/                         # Maintenance and quality automation
+│   ├── check_formatting.py         # .editorconfig formatting linter
+│   └── fix_formatting.py           # Automatic LF and trailing whitespace normalizer
 ├── reports/                         # Execution logs, sign-off reports, and figures
+│   ├── VERIFICATION_CLAIM_AUDIT.md  # Formal ground-truth audit of all claims
 │   ├── FINAL_PROJECT_SIGNOFF_REPORT.md # Consolidated engineering sign-off report
+│   ├── cpm_calibration.rpt          # CPM delay vs MAC timing slack correlation table
+│   ├── cpm_pvt_characterization.rpt # CPM cross-corner guardband characterization
 │   ├── analog_drc.rpt               # Magic DRC execution report (0 errors)
-│   ├── analog_lvs.rpt               # Netgen / Magic LVS extraction report
+│   ├── analog_lvs.rpt               # Magic structural device audit report
 │   ├── analog_pex_comparison.rpt    # Post-layout PEX parameter comparison
 │   ├── energy_tradeoff_report.rpt   # SPICE energy integration summary
 │   ├── mixed_signal_integration.rpt # 60us dynamic transient report
@@ -360,19 +370,25 @@ The verification suite can be executed using the unified Makefile:
 
 | Target | Command | Primary Tools | Output Generated |
 | :--- | :--- | :--- | :--- |
-| **Digital Simulation** | `make sim` | Icarus Verilog | `sim/tb_controller.vvp`, `sim/tb_avs_top.vvp` |
+| **Digital Simulation** | `make sim` | Icarus Verilog | 4 testbenches (`tb_controller`, `tb_top`, `tb_cpm`, `tb_cdc`) |
 | **Analog Characterization**| `make analog` | ngspice | `analog/*/*.data`, `analog/*/*.log` |
 | **Logic Synthesis** | `make synth` | Yosys | `synth/avs_system_top_netlist.v` |
 | **Static Timing** | `make sta` | OpenSTA | `sta/sta_tt.log`, `sta_ss.log`, `sta_ff.log` |
 | **Physical Design** | `make pd` | Python scripts | `pd/results/floorplan.def`, `avs_system_top.spef` |
 | **Post-Route Timing** | `make post_route_sta` | OpenSTA | `reports/post_route_sta_tt.log` |
 | **Analog Verification** | `make drc && make lvs && make pex` | Magic 8.3, ngspice | `reports/analog_drc.rpt`, `analog_lvs.rpt` |
-| **Closed-Loop Co-Sim** | `make model` | Python 3.12 | `reports/avs_closed_loop_transient.png` |
+| **Closed-Loop Co-Sim** | `make model` | Python 3.12 | `reports/avs_closed_loop_transient.png`, `cpm_calibration.rpt` |
 | **PVT Matrix Sign-off** | `make pvt_matrix` | Text report | `reports/pvt_cross_corner_matrix.rpt` |
 | **Full Pipeline** | `make validate` | All tools | Comprehensive cross-domain sign-off |
 
 ### Developer Convenience Aliases
-- `make test` — Runs fast simulation testbenches and behavioral models.
+- `make test` — Runs fast simulation testbenches (`sim` + `model`).
+- `make lint` — Strictly lints RTL source syntax with `iverilog -Wall`.
+- `make check` — Fast sanity check (`sim` + `model` + `pvt_matrix`).
+- `make build` — Synthesizes digital gate-level and builds physical design database (`synth` + `pd`).
+- `make report` — Displays cross-corner sign-off summary matrix.
+- `make fmt` — Validates codebase compliance with `.editorconfig`.
+- `make clean` — Cleans up generated waveforms, temporary netlists, and caches.
 - `make lint` — Checks RTL source syntax with `iverilog -Wall`.
 - `make check` — Fast sanity check (`sim` + `model` + `pvt_matrix`).
 - `make build` — Synthesizes digital gate-level and builds physical design database (`synth` + `pd`).

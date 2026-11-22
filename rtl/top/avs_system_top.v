@@ -18,21 +18,21 @@ module avs_system_top #(
     // Clock & Reset (1.8V domain)
     input  wire                    clk_io,          // 12.5 - 25 MHz controller clock
     input  wire                    rst_n,           // Asynchronous active-low reset
-    
+
     // Core Clock (Variable-voltage domain)
     input  wire                    clk_core,        // 50 - 100 MHz load clock
-    
+
     // AVS Configuration & Control
     input  wire                    avs_enable,      // 1 = Closed loop tracking, 0 = Manual
     input  wire [CODE_WIDTH-1:0]   manual_code,     // Manual voltage code
     input  wire [MARGIN_WIDTH-1:0] target_margin,   // Target timing margin (default: 2 taps)
-    
+
     // Status & Observability Outputs
     output wire [CODE_WIDTH-1:0]   dac_voltage_code,// 5-bit code to Analog Reference DAC
     output wire                    timing_hazard,   // Emergency hazard alarm
     output wire                    loop_settled,    // Loop locked inside target deadband
     output wire [2:0]              fsm_state_out,   // Controller state
-    
+
     // Digital Load Controls & Data Ports
     input  wire                    load_enable,
     input  wire                    stress_mode,     // Dynamic LFSR activity burst
@@ -103,15 +103,17 @@ module avs_system_top #(
     assign core_activity_pulse = activity_pulse_ls;
 
     // --------------------------------------------------------------------------
-    // CDC Synchronizer: Safe crossing of CPM margin into Controller Domain
+    // Coherent Gray-Code CDC Synchronizer: Safe crossing of CPM margin into Controller Domain
     // --------------------------------------------------------------------------
     wire [MARGIN_WIDTH-1:0] synchronized_margin;
 
-    cdc_synchronizer #(.WIDTH(MARGIN_WIDTH)) u_cdc_margin (
+    cdc_gray_synchronizer #(.WIDTH(MARGIN_WIDTH)) u_cdc_margin (
+        .src_clk    (clk_core),
+        .src_rst_n  (rst_n),
+        .bin_in     (cpm_margin_ls),
         .dest_clk   (clk_io),
         .dest_rst_n (rst_n),
-        .async_in   (cpm_margin_ls),
-        .sync_out   (synchronized_margin)
+        .bin_out    (synchronized_margin)
     );
 
     // --------------------------------------------------------------------------

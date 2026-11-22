@@ -15,10 +15,10 @@ import re
 
 def run_placement_and_cts():
     netlist_file = "synth/avs_system_top_netlist.v"
-    
+
     row_height = 2.72
     site_width = 0.46
-    
+
     cell_widths = {
         "sky130_fd_sc_hd__inv_1": 1.38,
         "sky130_fd_sc_hd__inv_2": 1.84,
@@ -73,7 +73,7 @@ def run_placement_and_cts():
     print(f"  - Total Placed Logic Cells  : {len(v18_cells) + len(ls_cells) + len(vcore_cells)}")
 
     placed_instances = []
-    
+
     # 1. Place VDD_1V8 cells (X: 20 to 115 um)
     curr_x = 20.0
     curr_row = 15

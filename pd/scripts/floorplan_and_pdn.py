@@ -32,7 +32,7 @@ def generate_floorplan_and_pdn():
     # PDN Grid Parameters (Sky130 met4 vertical, met5 horizontal)
     strap_w = 4.8      # um
     strap_pitch = 30.0  # um
-    
+
     # Calculate strap counts
     v_straps = int(core_w / strap_pitch) # 14 straps
     h_straps = int(core_h / strap_pitch) # 9 straps
@@ -76,7 +76,7 @@ def generate_floorplan_and_pdn():
 
         # Special Nets (PDN Dual-Rail Straps)
         f.write("SPECIALNETS 3 ;\n")
-        
+
         # 1. VDD_1V8 (Analog & Controller Domain, left partition 15um - 120um)
         f.write("- VDD_1V8  ( PIN VDD_1V8 )\n")
         f.write(f"  + ROUTED met4 4800 ( 30000 15000 ) ( 30000 305000 )\n")
@@ -114,7 +114,7 @@ def generate_floorplan_and_pdn():
     # Via45 resistance = 0.8 Ohms / via
     r_sq_m4 = 0.045
     r_sq_m5 = 0.028
-    
+
     # Calculate equivalent resistance of VDD_CORE mesh:
     # 10 vertical straps in parallel (length = 290 um, width = 4.8 um)
     r_m4_strap = r_sq_m4 * (core_h / strap_w) # ~2.72 Ohms per strap

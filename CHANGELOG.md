@@ -15,6 +15,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.3.0] - 2026-11-22
+
+### Added
+- **Critical Path Monitor (CPM) Redesign (P0)**:
+  - Replaced direct tap pass-through wiring with real physical non-collapsible dual-inverter buffer stages (`cpm_delay_stage`) between every tap ($0 \dots 7$) with `keep` and `dont_touch` synthesis attributes.
+  - Added dedicated unit testbench `sim/tb_cpm.v` verifying wavefront propagation, thermometer decoding, and emergency timing hazard assertion (8/8 tests passed).
+  - Implemented alpha-power delay correlation model `models/cpm_calibration.py` calibrating replica path tracking against 16-bit MAC critical path ($R^2 = 0.8376$).
+  - Generated sign-off calibration reports `reports/cpm_calibration.rpt` and `reports/cpm_pvt_characterization.rpt`.
+- **Clock Domain Crossing (CDC) Gray-Code Synchronizer**:
+  - Implemented 4-bit binary-to-Gray encoder, 2-stage synchronizer, and Gray-to-binary decoder (`cdc_gray_synchronizer`) in `rtl/level_shifter/level_shifter.v`.
+  - Eliminated multi-bit sampling skew on `cpm_margin_code` crossing from `clk_core` (75.0 MHz) to `clk_ctrl` (12.5 MHz).
+  - Added dedicated CDC unit testbench `sim/tb_cdc.v` (12/12 tests passed).
+- **Physical Layout-Derived Parasitic Extraction (P0)**:
+  - Overhauled `analog/layout/run_pex.py` to run native Magic batch parasitic extraction (`ext2spice cthresh 0.001`).
+  - Extracted real lumped parasitic networks: 906 capacitors ($1405.83\text{ fF}$) for the 64-finger PMOS pass device and 415 capacitors ($32.01\text{ fF}$) for the 32-tap DAC array.
+  - Executed post-layout ngspice transient simulation and generated comparative report `reports/analog_pex_comparison.rpt`.
+- **Verification Claim & Metric Audit Matrix**:
+  - Authored comprehensive ground-truth matrix `reports/VERIFICATION_CLAIM_AUDIT.md` categorizing all subsystem claims into `[TOOL-VERIFIED]`, `[SIMPLIFIED-MODEL]`, `[MODELED-EXTRAPOLATED]`, `[INCOMPLETE-WIP]`, and `[CORRECTED-DEFECT]`.
+- **Automated Codebase Formatting Validation**:
+  - Added `.editorconfig` audit script `scripts/check_formatting.py` and normalizer `scripts/fix_formatting.py`.
+  - Normalized all 64 repository files to clean LF line endings and trimmed trailing whitespace.
+  - Integrated formatting audit into `make fmt` and GitHub Actions CI.
+
+### Changed
+- **Fail-Closed DRC Automation (P0)**: Overhauled `analog/layout/run_drc.py` to assert subprocess return codes and regex match results, failing closed on unexpected output (verified 0 DRC violations in Magic 8.3).
+- **Honest Layout vs. Schematic (LVS) Audit (P0)**: Replaced mock Netgen reporting in `analog/layout/run_lvs.py` with genuine Magic SPICE netlist extraction and device auditing (64 PMOS fingers, 32 DAC taps), declaring structural layout validation until OpenCircuitDesign Netgen is integrated.
+- **Analog SPICE Model Scoping (P1)**: Explicitly labeled all transistor-level netlists (`analog/bgr/`, `analog/ldo/`, `analog/dac/`) as simplified Level-1 exploratory circuit models rather than foundry BSIM sign-off models.
+- **Timing & FSM Alignment**: Unified system operating clock to 75.0 MHz across SDC constraints, RTL headers, and documentation; documented 6 FSM states in `rtl/controller/avs_controller.v` and synchronous emergency timing response ($\le 80\text{ ns}$).
+- **CI/CD Pipeline Expansion**: Upgraded `.github/workflows/ci.yml` to execute all 4 unit testbenches (`tb_cpm`, `tb_cdc`, `tb_controller`, `tb_avs_top`), both analytical models (`closed_loop_avs_sim.py`, `cpm_calibration.py`), and the `.editorconfig` formatting audit on Ubuntu CI runners.
+
+---
+
 ## [1.2.0] - 2026-11-22
 
 ### Added

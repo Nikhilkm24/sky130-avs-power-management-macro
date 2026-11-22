@@ -1,47 +1,27 @@
 ==================================================================
-   SKY130 ANALOG LAYOUT VERSUS SCHEMATIC (LVS) SIGN-OFF REPORT   
+   SKY130 ANALOG LAYOUT VERSUS SCHEMATIC (LVS) AUDIT REPORT      
 ==================================================================
-Verification Engine : Magic 8.3 Extractor & Topological Comparator
+Verification Engine : Magic 8.3 Extractor & Structural Device Checker
 Technology PDK      : SkyWater 130nm (sky130A)
 Raw Execution Log   : reports/analog_lvs.log
+Netgen LVS Status   : NOT AVAILABLE (Netgen binary not in PATH; structural device check performed)
 
 ------------------------------------------------------------------
 Block 1: 5-Bit Common-Centroid DAC Resistor Array (dac_5bit_array)
 ------------------------------------------------------------------
-Schematic Netlist : analog/dac/dac_5bit_rstring.sp
-Layout Netlist    : analog/layout/dac_5bit_array.ext.spice
-
-Component              | Schematic        | Layout Extracted   | Status
-------------------------------------------------------------------------
-Active Unit Resistors  | 32               | 32                 | MATCH
-Perimeter Dummies      | 0 (unmodeled)    | 24 (filtered)      | MATCH
-Substrate Guard Ring   | 1 (AGND)         | 1 (AGND)           | MATCH
-Reference Terminals    | V_REF, V_BOT     | V_REF, V_BOT       | MATCH
-Ladder Tap Terminals   | TAP_0..TAP_31    | TAP_0..TAP_31      | MATCH
-------------------------------------------------------------------------
-Netlist Topology Comparison : 100% IDENTICAL (Permutation & Symmetry matched)
-Property Verification       : R_unit = 500.0 Ohms +/- 0.0% (Matched)
-Subcircuit 1 Status         : CIRCUITS MATCH 100% (ZERO ERRORS)
+Schematic Resistors : 32 unit resistors (analog/dac/dac_5bit_rstring.sp)
+Layout Geometry     : 8x4 common-centroid array with perimeter dummies
+Structural Status   : PASSED (Layout contains 32-resistor geometry)
+Note on Extraction  : Resistors require via contacts (polycut) for lumped SPICE extraction.
 
 ------------------------------------------------------------------
 Block 2: 64-Finger PMOS Pass Transistor (pmos_pass_2000u)
 ------------------------------------------------------------------
-Schematic Netlist : analog/ldo/ldo_core.sp (Mpass instance)
-Layout Netlist    : analog/layout/pmos_pass_2000u.ext.spice
-
-Parameter              | Schematic        | Layout Extracted   | Status
-------------------------------------------------------------------------
-Device Model           | sky130_pmos      | sky130_fd_pr__pfet | MATCH
-Parallel Fingers       | 64               | 64                 | MATCH
-Finger Width (W)       | 31.250 um        | 31.250 um          | MATCH
-Channel Length (L)     | 0.150 um         | 0.150 um           | MATCH
-Total Effective Width  | 2000.0 um        | 2000.0 um          | MATCH
-Substrate Well Tap     | VDD_1V8          | VDD_1V8            | MATCH
-------------------------------------------------------------------------
-Netlist Topology Comparison : 100% IDENTICAL (All 64 fingers in parallel)
-Property Verification       : Total W/L = 2000.0 um / 0.15 um (Matched)
-Subcircuit 2 Status         : CIRCUITS MATCH 100% (ZERO ERRORS)
+Schematic Instance  : M_pass (W=2000.0 um, L=0.15 um, 64 fingers)
+Extracted Fingers   : 64 parallel pfet fingers
+Structural Status   : PASSED (Exact 64-finger topology verified)
 
 ==================================================================
-OVERALL LVS RESULT : PASSED (100% MATCH, ZERO MISMATCHES)
+STRUCTURAL LVS AUDIT : PASSED (Zero Missing Devices / Fingers)
+NOTE: Full topological graph isomorphism sign-off requires Netgen LVS.
 ==================================================================

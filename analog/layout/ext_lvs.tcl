@@ -1,6 +1,6 @@
 # Batch Extraction for LVS Netlist Generation
 puts "=========================================================="
-puts "  MAGIC 8.3 BATCH EXTRACTION FOR LVS SIGN-OFF             "
+puts "  MAGIC 8.3 BATCH EXTRACTION FOR LVS STRUCTURAL AUDIT     "
 puts "=========================================================="
 puts "Technology: [tech name]"
 

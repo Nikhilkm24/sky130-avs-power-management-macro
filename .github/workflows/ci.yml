@@ -24,9 +24,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install numpy matplotlib
 
+      - name: Check Codebase Formatting (.editorconfig)
+        run: |
+          python scripts/check_formatting.py
+
       - name: Run Closed-Loop Behavioral Validation Model
         run: |
           python models/closed_loop_avs_sim.py
+
+      - name: Run CPM Delay Correlation & PVT Characterization Model
+        run: |
+          python models/cpm_calibration.py
 
       - name: Install Icarus Verilog
         run: |
@@ -42,6 +50,16 @@ jobs:
             rtl/controller/avs_controller.v \
             rtl/top/avs_system_top.v
           rm -f /tmp/lint_check.vvp
+
+      - name: Run Critical Path Monitor (CPM) Testbench
+        run: |
+          iverilog -g2012 -o sim_cpm.vvp rtl/cpm/critical_path_monitor.v sim/tb_cpm.v
+          vvp sim_cpm.vvp
+
+      - name: Run Coherent Gray-Code CDC Synchronizer Testbench
+        run: |
+          iverilog -g2012 -o sim_cdc.vvp rtl/level_shifter/level_shifter.v sim/tb_cdc.v
+          vvp sim_cdc.vvp
 
       - name: Run AVS Controller FSM Testbench
         run: |

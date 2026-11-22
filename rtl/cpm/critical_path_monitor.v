@@ -2,29 +2,51 @@
 // Module: critical_path_monitor.v
 // Project: Closed-Loop AVS Power Management Macro on Sky130
 // Description: Synthesizable Replica Critical Path Monitor (CPM).
-//              Features:
-//              1. Synthesizable 16-stage replica delay chain with explicit
-//                 keep attributes on nets to survive logic optimization.
-//              2. 8-tap tapped delay line with sampling flip-flops.
-//              3. Monotonic priority thermometer decoder guaranteeing
-//                 monotonic slack measurements.
-//              4. Real-time timing hazard detection flag.
+//
+// Hardware Architecture (v1.3.0 Redesign):
+// 1. Launch Flip-Flop: Launches a clean transition edge on every core clock cycle.
+// 2. Replica Path: 16-stage inversion chain modeling critical path gate delay.
+// 3. Physical Tapped Delay Line: 8 distinct, physical delay buffer stages
+//    placed in series after the replica path. Every tap is separated by an
+//    explicit, non-collapsible delay element with keep/dont_touch attributes.
+// 4. Sampling Registers: Bank of 8 flip-flops clocked by clk_core capturing
+//    the propagating transition wavefront across the taps at the cycle boundary.
+// 5. Monotonic Thermometer Decoder: Priority decoder producing a 4-bit margin
+//    code (0 to 8) representing quantized timing slack.
+// 6. Timing Hazard Detector: Asserted when margin code drops to 0.
 // ==============================================================================
 
 `timescale 1ns / 1ps
 
+// Explicit Non-Inverting Delay Cell for Tapped Delay Stages
+module cpm_delay_stage (
+    input  wire in,
+    output wire out
+);
+    // Two cascaded inverters with keep/dont_touch attributes to prevent
+    // logic synthesis from pruning or merging consecutive taps.
+    (* keep = "true", dont_touch = "true" *) wire inv1_out;
+    (* keep = "true", dont_touch = "true" *) wire inv2_out;
+
+    assign inv1_out = ~in;
+    assign inv2_out = ~inv1_out;
+    assign out      = inv2_out;
+endmodule
+
 module critical_path_monitor #(
     parameter integer NUM_TAPS = 8
 )(
-    input  wire                 clk_core,        // Core clock (75 - 80 MHz)
+    input  wire                 clk_core,        // Core clock (75.0 MHz nominal)
     input  wire                 rst_n,           // Active-low asynchronous reset
     input  wire                 enable,          // Monitor enable
-    output reg  [3:0]           margin_code,     // Encoded slack margin (0 to NUM_TAPS)
-    output wire [NUM_TAPS-1:0]  thermometer_raw, // Raw sampled taps
-    output reg                  timing_hazard    // Asserted if margin drops to 0 (timing hazard)
+    output reg  [3:0]           margin_code,     // Encoded timing margin (0 to NUM_TAPS)
+    output wire [NUM_TAPS-1:0]  thermometer_raw, // Raw sampled wavefront taps
+    output reg                  timing_hazard    // Asserted when margin code == 0
 );
 
-    // Launch flip-flop generates alternating edge transition
+    // --------------------------------------------------------------------------
+    // 1. Launch Flip-Flop
+    // --------------------------------------------------------------------------
     reg launch_flop;
     always @(posedge clk_core or negedge rst_n) begin
         if (!rst_n) begin
@@ -35,12 +57,10 @@ module critical_path_monitor #(
     end
 
     // --------------------------------------------------------------------------
-    // Synthesizable Replica Delay Chain (16 Inversion Stages)
-    // Structured logic path modeling inverter/NAND/NOR gates of the MAC datapath.
-    // Explicit keep attributes on wires prevent Yosys optimization and removal.
+    // 2. Synthesizable Replica Delay Chain (16 Inversion Stages)
     // --------------------------------------------------------------------------
     wire replica_start = launch_flop;
-    (* keep = "true" *) wire [15:0] rep_net;
+    (* keep = "true", dont_touch = "true" *) wire [15:0] rep_net;
 
     assign rep_net[0]  = ~replica_start;
     assign rep_net[1]  = ~rep_net[0];
@@ -62,19 +82,25 @@ module critical_path_monitor #(
     wire replica_path_out = rep_net[15];
 
     // --------------------------------------------------------------------------
-    // Tapped Delay Line: 8 successive delay buffers extending past replica path
+    // 3. Real Physical Tapped Delay Line
+    // Tap 0 connects to the replica output.
+    // Each subsequent tap (1 to NUM_TAPS-1) passes through an explicit delay stage.
     // --------------------------------------------------------------------------
     (* keep = "true" *) wire [NUM_TAPS-1:0] tap_wire;
     assign tap_wire[0] = replica_path_out;
+
     genvar i;
     generate
-        for (i = 1; i < NUM_TAPS; i = i + 1) begin : gen_delay_taps
-            assign tap_wire[i] = tap_wire[i-1];
+        for (i = 1; i < NUM_TAPS; i = i + 1) begin : gen_physical_taps
+            cpm_delay_stage u_stage (
+                .in  (tap_wire[i-1]),
+                .out (tap_wire[i])
+            );
         end
     endgenerate
 
     // --------------------------------------------------------------------------
-    // Sampling Flip-Flops: Capture wavefront on rising clock edge
+    // 4. Sampling Registers: Capture wavefront on rising edge of clk_core
     // --------------------------------------------------------------------------
     reg [NUM_TAPS-1:0] sample_flops;
     always @(posedge clk_core or negedge rst_n) begin
@@ -85,7 +111,7 @@ module critical_path_monitor #(
         end
     end
 
-    // Detect matched transition wavefront (XOR with expected launch polarity)
+    // Detect matched transition wavefront against current launched polarity
     wire [NUM_TAPS-1:0] tap_match;
     generate
         for (i = 0; i < NUM_TAPS; i = i + 1) begin : gen_tap_match
@@ -96,8 +122,8 @@ module critical_path_monitor #(
     assign thermometer_raw = tap_match;
 
     // --------------------------------------------------------------------------
-    // Monotonic Priority Thermometer Decoder:
-    // Decodes contiguous transition pattern from tap 0 upwards.
+    // 5. Monotonic Priority Thermometer Decoder
+    // Counts contiguous transition matches from tap 0 upwards.
     // --------------------------------------------------------------------------
     reg [3:0] margin_decoded;
     always @(*) begin
@@ -114,6 +140,9 @@ module critical_path_monitor #(
         endcase
     end
 
+    // --------------------------------------------------------------------------
+    // 6. Registered Output and Timing Hazard Flag
+    // --------------------------------------------------------------------------
     always @(posedge clk_core or negedge rst_n) begin
         if (!rst_n) begin
             margin_code   <= 4'd0;
