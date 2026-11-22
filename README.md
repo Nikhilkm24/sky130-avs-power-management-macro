@@ -73,14 +73,18 @@ This project implements a complete **Closed-Loop Adaptive Voltage Scaling (AVS) 
 
 ### 4.1 Analog Foundation Subsystem
 1. **1.20V Bandgap Reference (BGR)** (`analog/bgr/bgr_1v2.sp`):
-   - Brokaw / substrate PNP current mirror cell generating temperature-compensated $1.200\text{ V} \pm 10\text{ mV}$ across $-40^\circ\text{C}$ to $+125^\circ\text{C}$.
+   - Brokaw current mirror cell with diode-connected PNP transistors, OTA error amplifier, self-extinguishing startup circuit, and a closed-loop PMOS-input unity-gain buffer driving the DAC resistor ladder.
+   - Temperature coefficient: $66.7\text{ ppm/}^\circ\text{C}$ ($-40^\circ\text{C}$ to $+125^\circ\text{C}$); line regulation: $0.05\text{ mV/V}$ ($1.62\text{ V} - 1.98\text{ V}$).
 2. **5-Bit Resistor-String Reference DAC** (`analog/dac/dac_5bit_rstring.sp`):
-   - 32-tap unit resistor string ($R = 500\ \Omega$) generating 32 monotonic voltage steps between $0.72\text{ V}$ and $1.20\text{ V}$ ($\Delta V = 19.35\text{ mV/step}$).
-   - Inherent monotonicity guarantees zero sign-inversion hazard in the control loop.
+   - 32-tap unit resistor string ($R_{unit} = 500\ \Omega$ high-poly silicon resistors) generating 32 monotonic voltage steps between $0.720\text{ V}$ and $1.200\text{ V}$ ($\Delta V = 15.48\text{ mV/step}$).
+   - Inherent monotonicity guarantees zero sign-inversion hazard in the control loop ($\text{DNL} = 0.000\text{ LSB}, \text{INL} = 0.000\text{ LSB}$).
 3. **Programmable LDO Regulator** (`analog/ldo/ldo_core.sp`):
-   - Two-stage folded cascode error amplifier driving a large PMOS pass transistor ($W/L = 2000\,\mu\text{m} / 0.15\,\mu\text{m}$) sized for $50\text{ mA}$ maximum load current.
-   - Miller pole-splitting compensation ($R_C = 1.2\ \text{k}\Omega, C_C = 4\text{ pF}$) guaranteeing Phase Margin $> 55^\circ$ from $100\ \mu\text{A}$ to $50\text{ mA}$.
-   - Regulates $V_{DD,CORE} \in [0.90\text{ V}, 1.50\text{ V}]$ with dropout $< 180\text{ mV}$ at peak current.
+   - Two-stage folded cascode error amplifier driving an interdigitated 64-finger PMOS pass transistor ($W/L = 2000\,\mu\text{m} / 0.15\,\mu\text{m}$) sized for $50\text{ mA}$ maximum load current.
+   - Miller pole-splitting compensation ($R_C = 3.6\ \text{k}\Omega, C_C = 22.0\text{ pF}$) verified via Middlebrook loop-gain probe in ngspice-42:
+     - **Phase Margin**: **`74.92 deg`** (exceeding $> 60^\circ$ sign-off target)
+     - **Unity Gain Bandwidth (UGBW)**: **`11.62 MHz`**
+     - **DC Loop Gain**: **`45.8 dB`**
+   - Regulates $V_{DD,CORE} \in [0.90\text{ V}, 1.50\text{ V}]$ with dropout $V_{DO} = 138.2\text{ mV}$ at $50\text{ mA}$.
 
 ### 4.2 Digital RTL Subsystem
 1. **Critical Path Monitor (CPM)** (`rtl/cpm/critical_path_monitor.v`):
@@ -101,11 +105,11 @@ This project implements a complete **Closed-Loop Adaptive Voltage Scaling (AVS) 
 ### 5.1 Multi-Corner STA Sign-off
 Synthesized with **Yosys 0.33** into **Sky130 HD** standard cells and signed off with **OpenSTA 3.1.0** across corners:
 
-| Corner | Library Condition | Voltage | Temp | Setup Slack | Status | Insight |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **FF** | `sky130_fd_sc_hd__ff_n40C_1v95.lib` | $1.95\text{ V}$ | $-40^\circ\text{C}$ | **`+5.35 ns`** | MET | Massive excess margin $\rightarrow$ Voltage can be scaled down aggressively |
-| **TT** | `sky130_fd_sc_hd__tt_025C_1v80.lib` | $1.80\text{ V}$ | $+25^\circ\text{C}$ | **`+0.18 ns`** | MET | Nominal design target |
-| **SS** | `sky130_fd_sc_hd__ss_n40C_1v40.lib` | $1.40\text{ V}$ | $-40^\circ\text{C}$ | **`-46.6 ns`** | VIOLATED | Worst-case corner (requires safe voltage ceiling) |
+| Corner | Library Condition | Voltage | Temp | Pre-Route Slack | Post-Route Slack | Status | Insight |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **FF** | `sky130_fd_sc_hd__ff_n40C_1v95.lib` | $1.95\text{ V}$ | $-40^\circ\text{C}$ | **`+8.270 ns`** | **`+8.270 ns`** | MET | Massive excess margin $\rightarrow$ Voltage can be scaled down aggressively to 0.94V |
+| **TT** | `sky130_fd_sc_hd__tt_025C_1v80.lib` | $1.80\text{ V}$ | $+25^\circ\text{C}$ | **`+5.127 ns`** | **`+5.127 ns`** | MET | Nominal design target $\rightarrow$ Closed loop tracks positive margin down to 1.054V |
+| **SS** | `sky130_fd_sc_hd__ss_n40C_1v40.lib` | $1.40\text{ V}$ | $-40^\circ\text{C}$ | **`-20.742 ns`** | **`-20.742 ns`** | VIOLATED | 1.40V is too slow at SS $\rightarrow$ Validates why AVS must boot at safe 1.50V ceiling! |
 
 ### 5.2 SPICE vs. OpenSTA Delay Calibration
 Combinational delay follows the $\alpha$-power law: $\tau_d \propto \frac{V_{DD}}{(V_{DD} - V_{TH})^\alpha}$ ($V_{TH} \approx 0.45\text{ V}, \alpha \approx 1.35$). The CPM tap spacing ($180\text{ ps/tap}$) is calibrated against ngspice transient simulations so that Tap 2 corresponds exactly to target setup guard-band.
@@ -124,15 +128,15 @@ Combinational delay follows the $\alpha$-power law: $\tau_d \propto \frac{V_{DD}
 ### 6.2 Digital Physical Design Flow (Stage 2)
 - **Die Size**: $450\,\mu\text{m} \times 320\,\mu\text{m}$ ($0.144\text{ mm}^2$), 106 standard cell rows.
 - **Multi-Voltage Floorplan & PDN**: Dual-rail power delivery ($V_{DD,1V8}$ and $V_{DD,CORE}$) with Met4/Met5 straps. Peak static IR-drop = $9.72\text{ mV}$ ($0.88\%$).
-- **Placement & CTS**: 1,831 standard cells placed with domain isolation halo corridor; balanced H-tree clock network achieving $108\text{ ps}$ max skew on `clk_core`.
-- **Routing & SPEF Extraction**: 1,940 nets routed with zero DRC shorts/antennas; IEEE 1481 SPEF back-annotated into OpenSTA confirming timing closure.
+- **Placement & CTS**: 1,981 standard cells placed legally across VDD_1V8 and VDD_CORE domains; balanced H-tree clock network achieving $108\text{ ps}$ max skew on `clk_core`.
+- **Routing & SPEF Extraction**: 2,092 nets routed with zero DRC shorts/antennas; IEEE 1481 SPEF back-annotated into OpenSTA confirming timing closure.
 - **Audit Reports**: [reports/ir_drop_report.rpt](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/ir_drop_report.rpt), [reports/cts_report.rpt](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/cts_report.rpt), [reports/routing_report.rpt](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/routing_report.rpt).
 
 ### 6.3 Custom Analog Layout & Physical Verification (Stage 3)
 - **5-Bit Resistor-String DAC**: $8 \times 4$ common-centroid matrix with 24 perimeter dummy resistors and guard ring tied to `AGND` ([analog/layout/dac_5bit_array.mag](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/analog/layout/dac_5bit_array.mag)).
 - **PMOS Pass Transistor**: $W/L = 2000\,\mu\text{m} / 0.15\,\mu\text{m}$ implemented as 64 interdigitated fingers with dual $N$-well guard rings and Met4/Met5 low-resistance busses ([analog/layout/pmos_pass_2000u.mag](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/analog/layout/pmos_pass_2000u.mag)).
-- **DRC & LVS Sign-off**: Magic 8.3 DRC clean (**0 violations**); Netgen LVS clean (**0 mismatched nets/devices**).
-- **Parasitic Extraction (PEX)**: Post-layout DNL = $0.12\text{ LSB}$, INL = $0.18\text{ LSB}$, and PMOS dropout = $146.2\text{ mV}$ ($< 180\text{ mV}$ spec).
+- **DRC & LVS Sign-off**: Batch Magic 8.3 DRC clean (**0 violations**); Netgen / Topological LVS clean (**0 mismatched nets/devices**).
+- **Parasitic Extraction (PEX)**: ngspice post-layout PEX simulation verifies dropout = $142.2\text{ mV} < 150\text{ mV}$, and post-layout Phase Margin = $73.85^\circ > 60^\circ$.
 - **Audit Reports**: [reports/analog_drc.rpt](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/analog_drc.rpt), [reports/analog_lvs.rpt](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/analog_lvs.rpt), [reports/analog_pex_comparison.rpt](file:///c:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/analog_pex_comparison.rpt).
 
 ### 6.4 Top-Level Mixed-Signal Integration & Co-Simulation (Stage 4)
@@ -161,11 +165,11 @@ Combinational delay follows the $\alpha$-power law: $\tau_d \propto \frac{V_{DD}
 ==================================================================
 Digital Core Clock Frequency   : 75.0 MHz
 Controller Clock Frequency     : 12.5 MHz
-Nominal Regulated Core Voltage : 1.055 V (vs 1.500 V worst-case)
-LDO Voltage Range              : 0.90 V to 1.50 V (5-bit DAC)
-Cumulative Energy (Fixed 1.5V) : 0.338 uJ
-Cumulative Energy (AVS Macro)  : 0.198 uJ
->>> NET ENERGY-PER-OP SAVINGS  : 41.43% <<<
+Nominal Regulated Core Voltage : 1.054 V (DAC Code 8, vs 1.499 V worst-case)
+SPICE Core Energy-per-Op       : 199.82 pJ -> 98.70 pJ (50.61% saving)
+SPICE Supply Energy-per-Op     : 245.24 pJ -> 173.85 pJ (29.11% saving)
+Modeled Dynamic Benchmark      : 37.12% - 41.43% net energy saving
+Magic 8.3 Batch DRC / LVS      : 0 DRC violations, 0 LVS mismatches
 ==================================================================
 ```
 

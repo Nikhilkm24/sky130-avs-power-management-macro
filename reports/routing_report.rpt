@@ -1,11 +1,11 @@
 ==================================================================
    SKY130 DETAILED ROUTING & PARASITICS EXTRACTION REPORT         
 ==================================================================
-Total Interconnect Nets Routed  : 1940
-Total Routed Wirelength         : 88762.00 um (88.762 mm)
-Total Via Transitions Inserted  : 4340
-Total Interconnect Capacitance  : 10.606 pF
-Average Wirelength per Net      : 45.75 um
+Total Interconnect Nets Routed  : 2092
+Total Routed Wirelength         : 95882.00 um (95.882 mm)
+Total Via Transitions Inserted  : 4708
+Total Interconnect Capacitance  : 11.439 pF
+Average Wirelength per Net      : 45.83 um
 Routing Layer Breakdown:
   - met1 (Local Horizontal)     : 38.5% total length
   - met2 (Local Vertical)       : 34.2% total length

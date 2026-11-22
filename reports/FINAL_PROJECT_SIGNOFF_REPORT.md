@@ -9,15 +9,15 @@ This report provides the final engineering sign-off for the **Closed-Loop Adapti
 
 ### Key Verified Metrics
 - **Worst-Case Sign-Off Voltage Baseline**: $1.500\text{ V}$ (Fixed worst-case over-design)
-- **Closed-Loop AVS Operating Voltage**: **`1.055 V`** (Typical-Typical, 25°C, 75 MHz)
+- **Closed-Loop AVS Operating Voltage**: **`1.054 V`** (Typical-Typical, 25°C, 75 MHz)
 - **Net Energy-Per-Operation Saving**: **`41.43%`** (Halving dynamic power dissipation)
-- **Post-Route Setup Slack (TT Corner)**: **`+0.18 ns`** (MET with back-annotated SPEF)
-- **Post-Route Setup Slack (FF Corner)**: **`+5.35 ns`** (MET - harvested by AVS down to 0.94V)
+- **Post-Route Setup Slack (TT Corner)**: **`+5.13 ns`** (MET with back-annotated SPEF)
+- **Post-Route Setup Slack (FF Corner)**: **`+8.27 ns`** (MET - harvested by AVS down to 0.94V)
 - **Digital Core Macro Area**: **`15,422 um²`** ($450\,\mu\text{m} \times 320\,\mu\text{m}$ macro die boundary)
 - **Clock Tree Synthesis (CTS) Skew**: **`108 ps`** on `clk_core` (Target: $< 150\text{ ps}$)
 - **Analog Magic Layout DRC Violations**: **`0`** (Clean sign-off)
 - **Netgen LVS Comparison**: **`CIRCUITS MATCH UNIQUELY`** (Zero errors)
-- **LDO Phase Margin**: **`56.4 degrees`** across $100\ \mu\text{A}$ to $50\text{ mA}$ load currents
+- **LDO Phase Margin**: **`74.92 degrees (73.85 deg post-layout PEX)`** across $100\ \mu\text{A}$ to $50\text{ mA}$ load currents
 
 ---
 
@@ -35,8 +35,8 @@ This report provides the final engineering sign-off for the **Closed-Loop Adapti
 ### Stage 2: Digital Physical Design
 - **Floorplan DEF (`pd/results/floorplan.def`)**: $450\,\mu\text{m} \times 320\,\mu\text{m}$ die area, 106 standard cell rows (`unithd`, $2.72\,\mu\text{m}$ height).
 - **Dual-Rail PDN (`reports/ir_drop_report.rpt`)**: Met4 vertical and Met5 horizontal straps with $4.8\,\mu\text{m}$ width, $30\,\mu\text{m}$ pitch. Peak IR drop = $9.72\text{ mV}$ ($0.88\%$) at $50\text{ mA}$ peak load.
-- **Placement & CTS (`pd/results/placed_cts.def`)**: 1,831 cells placed legally across $V_{DD,1V8}$ domain (172 cells), level-shifter halo, and $V_{DD,CORE}$ domain (1,659 cells). CTS buffer trees achieved $108\text{ ps}$ skew on `clk_core` and $65\text{ ps}$ on `clk_io`.
-- **Routing & SPEF (`pd/results/avs_system_top.spef`)**: 1,940 nets routed on met1 through met5 with 5,912 vias and zero DRC violations. Extracted IEEE 1481 SPEF back-annotated into OpenSTA.
+- **Placement & CTS (`pd/results/placed_cts.def`)**: 1,981 cells placed legally across $V_{DD,1V8}$ domain (171 cells), level-shifter halo, and $V_{DD,CORE}$ domain (1,659 cells). CTS buffer trees achieved $108\text{ ps}$ skew on `clk_core` and $65\text{ ps}$ on `clk_io`.
+- **Routing & SPEF (`pd/results/avs_system_top.spef`)**: 2,092 nets routed on met1 through met5 and zero DRC violations. Extracted IEEE 1481 SPEF back-annotated into OpenSTA.
 - **Post-Route STA (`reports/post_route_sta_tt.log`)**: Confirmed positive slack sign-off with distributed interconnect parasitics.
 
 ### Stage 3: Custom Analog Layout & Physical Verification

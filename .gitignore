@@ -36,4 +36,5 @@ sta/results/
 *.bak
 *~
 .yosys_history
+*.ext
 

@@ -248,9 +248,9 @@ The design was synthesized using **Yosys 0.33** into Sky130 HD standard cells an
 
 | Corner | Operating Conditions | Liberty Model | Worst Setup Slack | Setup Status | Worst Hold Slack | Hold Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **FF** | $1.95\text{ V}, -40^\circ\text{C}$ | `sky130_fd_sc_hd__ff_n40C_1v95.lib` | **`+5.35 ns`** | **MET** | `+0.05 ns` | MET |
-| **TT** | $1.80\text{ V}, +25^\circ\text{C}$ | `sky130_fd_sc_hd__tt_025C_1v80.lib` | **`+0.18 ns`** | **MET** | `+0.18 ns` | MET |
-| **SS** | $1.40\text{ V}, -40^\circ\text{C}$ | `sky130_fd_sc_hd__ss_n40C_1v40.lib` | **`-46.63 ns`** | VIOLATED | `+0.82 ns` | MET |
+| **FF** | $1.95\text{ V}, -40^\circ\text{C}$ | `sky130_fd_sc_hd__ff_n40C_1v95.lib` | **`+8.270 ns`** | **MET** | `+0.050 ns` | MET |
+| **TT** | $1.80\text{ V}, +25^\circ\text{C}$ | `sky130_fd_sc_hd__tt_025C_1v80.lib` | **`+5.127 ns`** | **MET** | `+0.182 ns` | MET |
+| **SS** | $1.40\text{ V}, -40^\circ\text{C}$ | `sky130_fd_sc_hd__ss_n40C_1v40.lib` | **`-20.742 ns`** | VIOLATED | `+1.066 ns` | MET |
 
 #### Key Timing Insight:
 At the Fast-Fast (FF) corner, the core has $+5.35\text{ ns}$ of positive slack on a $12.5\text{ ns}$ clock period (over $42\%$ surplus margin). Operating at fixed high voltage in this corner wastes dynamic energy. At the Slow-Slow (SS) corner, cell propagation delay increases, validating why the AVS Controller must boot at $V_{MAX} = 1.50\text{ V}$ and maintain positive margin tracking.
