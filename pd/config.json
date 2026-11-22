@@ -1,0 +1,32 @@
+{
+    "DESIGN_NAME": "avs_system_top",
+    "PDK": "sky130A",
+    "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+    "VERILOG_FILES": [
+        "dir::rtl/level_shifter/level_shifter.v",
+        "dir::rtl/load/pipelined_mac_load.v",
+        "dir::rtl/cpm/critical_path_monitor.v",
+        "dir::rtl/controller/avs_controller.v",
+        "dir::rtl/top/avs_system_top.v"
+    ],
+    "CLOCK_PORT": "clk_core",
+    "CLOCK_PERIOD": 12.5,
+    "CLOCK_NET": "clk_core",
+    "FP_SIZING": "absolute",
+    "DIE_AREA": [0, 0, 450.0, 320.0],
+    "CORE_AREA": [15.0, 15.0, 435.0, 305.0],
+    "PL_TARGET_DENSITY_PCT": 65,
+    "FP_PDN_MULTILAYER": true,
+    "FP_PDN_HORIZONTAL_LAYER": "met5",
+    "FP_PDN_VERTICAL_LAYER": "met4",
+    "FP_PDN_VOFFSET": 15.0,
+    "FP_PDN_HOFFSET": 15.0,
+    "FP_PDN_VPITCH": 30.0,
+    "FP_PDN_HPITCH": 30.0,
+    "FP_PDN_VWIDTH": 4.8,
+    "FP_PDN_HWIDTH": 4.8,
+    "DIODE_INSERTION_STRATEGY": 3,
+    "RUN_KLAYOUT_DRC": true,
+    "RUN_KLAYOUT_LVS": true,
+    "RUN_CVC": true
+}

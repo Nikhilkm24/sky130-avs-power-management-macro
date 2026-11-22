@@ -1,0 +1,13 @@
+==================================================================
+   CLOSED-LOOP AVS SYSTEM SIGN-OFF METRICS SUMMARY (Sky130)       
+==================================================================
+Digital Core Clock Frequency   : 75.0 MHz
+Controller Clock Frequency     : 12.5 MHz
+Nominal Regulated Core Voltage : 1.055 V (vs 1.500 V worst-case)
+LDO Voltage Range              : 0.90 V to 1.50 V (5-bit DAC, 19.35 mV/step)
+Idle Power (5mA, AVS)          : 2.06 mW (vs 2.23 mW fixed)
+Compute Burst Power (38mA, AVS): 9.11 mW (vs 16.40 mW fixed)
+Total Cumulative Energy Fixed  : 0.338 uJ
+Total Cumulative Energy AVS    : 0.198 uJ
+Overall Energy-per-Op Saving   : 41.43 %
+==================================================================

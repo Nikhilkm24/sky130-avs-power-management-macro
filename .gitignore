@@ -1,0 +1,38 @@
+# Simulation and Verification
+*.vcd
+*.vvp
+*.fst
+*.raw
+*.log
+*.out
+*.measure
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.ipynb_checkpoints/
+
+# Large PDK Library files (>50MB triggers GitHub push warnings)
+sta/libs/*.lib
+
+# Synthesis & Implementation
+synth/build/
+pd/runs/
+pd/results/
+pd/reports/
+sta/results/
+*.def
+*.lef
+*.gds
+*.spef
+
+# EDA temporary files
+*.swp
+*.bak
+*~
+.yosys_history
+
