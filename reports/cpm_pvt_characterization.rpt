@@ -1,5 +1,6 @@
 ====================================================================================
    SKY130 CPM PVT 6-POINT CROSS-CORNER CHARACTERIZATION REPORT                      
+   Milestone: v1.4.1 — Verification Integrity & Raw Measurement Ingestion           
 ====================================================================================
 Corner Condition       | Core VDD | Temp(C) | t_MAC(ns) | STA Slack  | CPM Code | Safety Status
 --------------------------------------------------------------------------------------------
@@ -7,9 +8,9 @@ CORNER_1_TT            | 1.800    | 25      | 7.600     | 5.133      | 8        
 CORNER_2_FF            | 1.950    | -40     | 4.671     | 8.270      | 8        | SAFE GUARDED
 CORNER_3_SS            | 1.400    | -40     | 33.283    | -20.740    | 0        | EMERGENCY CLAMP
 CORNER_4_AVS_NOM       | 1.200    | 25      | 9.870     | 2.863      | 8        | SAFE GUARDED
-CORNER_5_AVS_LOCK      | 1.054    | 25      | 12.350    | 0.383      | 3        | SAFE GUARDED
-CORNER_6_AVS_MIN       | 0.940    | -40     | 11.820    | 0.913      | 6        | SAFE GUARDED
+CORNER_5_AVS_LOCK      | 1.054    | 25      | 12.350    | 0.383      | 1        | DEFICIT (Up-step)
+CORNER_6_AVS_MIN       | 0.940    | -40     | 11.820    | 0.913      | 4        | SAFE GUARDED
 ============================================================================================
-SUMMARY: Correlation R^2 = 0.5359 | Worst-Case Optimistic Error = 287.0 ps
-All 6 PVT sign-off points independently verified against OpenSTA timing requirements.
+SUMMARY: Correlation R^2 = 0.6056 | Worst-Case Optimistic Error = 0.0 ps
+Data source: reports/sta_cpm_raw_measurements.csv. Jitter and setup budgets fully included.
 ====================================================================================

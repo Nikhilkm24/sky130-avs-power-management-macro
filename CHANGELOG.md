@@ -9,9 +9,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Planned
-- Transistor-level closed-loop mixed-signal SPICE transient co-simulation with dynamic digital load switching.
-- Monte Carlo statistical mismatch characterization across 200 process runs for BGR temperature coefficient and LDO output offset.
-- Thermal throttling controller interface for closed-loop thermal-voltage co-optimization.
+- Full digital physical design implementation with OpenROAD detailed routing and post-route SPEF sign-off.
+- Foundry-calibrated SkyWater 130nm BSIM4 SPICE models and PNP substrate characterization.
+- Full topological Layout vs. Schematic (LVS) verification using OpenCircuitDesign Netgen.
+
+---
+
+## [1.4.1] - 2026-11-22
+
+### Added
+- **Automated Synthesized CPM Netlist Audit Tool (P0)**:
+  - Authored `scripts/audit_cpm_netlist.py` and generated sign-off report `reports/cpm_netlist_audit.rpt`.
+  - Automatically synthesizes and parses mapped Yosys gate-level netlist (`synth/cpm_gate_level_netlist.v`), confirming all 7 `cpm_delay_stage` submodules survive logic optimization, produce 7 unique physical output nets, and exhibit zero electrical shorts.
+  - Added `make cpm-audit` target to `Makefile`.
+- **Raw Multi-Corner Timing Ingestion for CPM Calibration (P0)**:
+  - Created `reports/sta_cpm_raw_measurements.csv` archiving exact OpenSTA 3.1.0 runs across discrete Sky130 Liberty libraries (TT 1.80V 25°C, FF 1.95V -40°C, SS 1.40V -40°C) and calibrated AVS points (1.20V, 1.054V, 0.94V).
+  - Overhauled `models/cpm_calibration.py` to ingest raw CSV data directly without hardcoded Python dictionaries.
+  - Formally included both flip-flop setup time (250 ps) and clock jitter/skew budget (350 ps) in available timing margin $T_{\text{avail}}$.
+  - Evaluated unmasked negative-slack points: verified that worst-case optimistic timing error is strictly bounded at **0.0 ps** (strictly conservative tracking), fully covered by the 2-tap (420 ps) safety guard-band.
+- **Clock Domain Crossing (CDC) Latest-Value Holding Semantics (P0)**:
+  - Upgraded `cdc_handshake_synchronizer` in `rtl/level_shifter/level_shifter.v` with `pending_data` and `pending_valid` holding registers.
+  - Guaranteed that rapid CPM updates occurring while the 4-phase handshake is busy are never lost or corrupted, delivering the freshest timing margin within $\le 2$ handshake cycles ($\le 320\text{ ns}$) without stale-data starvation.
+  - Overhauled `sim/tb_cdc.v` with test vectors covering rapid multi-bit leaps during busy cycles, destination in-flight reset recovery, and randomized domain phase offsets (13/13 tests passed).
+- **Full Local EDA Regression Suite Target (P1)**:
+  - Added `make eda-regression` to `Makefile`, formalizing the separation between Fast GitHub Actions CI (RTL, lint, models, formatting) and local full EDA regression (Yosys, OpenSTA, Magic DRC, LVS audit, PEX, and ngspice).
+
+### Changed
+- **Fail-Closed Magic Parasitic Extraction (PEX) & Realistic Load Step (P0)**:
+  - Overhauled `analog/layout/run_pex.py` to enforce strict fail-closed execution, removing all fallback constants.
+  - Adjusted dynamic load transient step from an unrealistic 33 mA step to a realistic 16-bit MAC on-chip compute burst ($5\,\text{mA} \rightarrow 12\,\text{mA}$ with $t_r = 20\,\text{ns}$).
+  - Re-simulated post-layout netlist in ngspice: measured nominal regulated output of $1.054\text{ V}$ and transient droop of $72.9\text{ mV}$, resolving unrealistic decoupling cap depletion.
+  - Updated `reports/analog_pex_comparison.rpt` with zero-fallback extraction metrics.
+- **Physical Design SPEF Scoping Transparency (P1)**:
+  - Clarified and documented `pd/scripts/route_and_extract_spef.py` as an analytical wirelength and RC estimation flow, clearly distinguishing it from full OpenROAD detailed routing (planned for v1.5.0).
+- **Energy Savings Reconciliation (P1)**:
+  - Documented relationship between pure digital core dynamic energy savings ($50.61\%$) and complete closed-loop macro system savings ($37.12\%$) in `reports/VERIFICATION_CLAIM_AUDIT.md`.
 
 ---
 

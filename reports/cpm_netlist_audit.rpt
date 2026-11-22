@@ -1,0 +1,33 @@
+====================================================================================
+   SKY130 CRITICAL PATH MONITOR (CPM) GATE-LEVEL NETLIST AUDIT REPORT               
+   Milestone: v1.4.1 — Synthesis Hierarchy & Physical Delay Element Inspection      
+====================================================================================
+Synthesis Tool        : Yosys Open SYnthesis Suite (Execution: Native)
+Top-Level Module      : critical_path_monitor
+Target Netlist File   : synth/cpm_gate_level_netlist.v
+Preserved Delay Stages: 7 / 7 (Taps 1 through 7)
+Distinct Tap Outputs  : 7 / 7 Unique Physical Nets
+Short Circuit Status  : ZERO SHORTS DETECTED (PASSED)
+
+------------------------------------------------------------------------------------
+1. Tapped Delay Line Stage Connectivity Audit
+------------------------------------------------------------------------------------
+Tap    | Instance Name                  | Input Net            | Output Net           | Status
+--------------------------------------------------------------------------------------------
+1      | gen_physical_taps[1].u_stage   | launch_flop          | tap_wire[1]          | PHYSICAL BUFFER PRESERVED
+2      | gen_physical_taps[2].u_stage   | tap_wire[1]          | tap_wire[2]          | PHYSICAL BUFFER PRESERVED
+3      | gen_physical_taps[3].u_stage   | tap_wire[2]          | tap_wire[3]          | PHYSICAL BUFFER PRESERVED
+4      | gen_physical_taps[4].u_stage   | tap_wire[3]          | tap_wire[4]          | PHYSICAL BUFFER PRESERVED
+5      | gen_physical_taps[5].u_stage   | tap_wire[4]          | tap_wire[5]          | PHYSICAL BUFFER PRESERVED
+6      | gen_physical_taps[6].u_stage   | tap_wire[5]          | tap_wire[6]          | PHYSICAL BUFFER PRESERVED
+7      | gen_physical_taps[7].u_stage   | tap_wire[6]          | tap_wire[7]          | PHYSICAL BUFFER PRESERVED
+============================================================================================
+AUDIT CONCLUSION:
+1. Synthesis Optimization Integrity: Yosys hierarchy preservation successfully retained
+   all 7 cpm_delay_stage instances. Continuous assignment logic optimization did NOT
+   collapse the inverter pairs or short consecutive taps together.
+2. Physical Separation: Each tap (tap_wire[1] through tap_wire[7]) is driven by a unique
+   non-inverting physical delay buffer stage with distinct input and output nets.
+3. Sampling Fidelity: The sampling registers capture 8 distinct physical points along the
+   propagating wavefront, guaranteeing genuine delay-quantized thermometer code output.
+====================================================================================

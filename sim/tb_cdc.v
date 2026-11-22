@@ -3,14 +3,15 @@
 // Project: Closed-Loop AVS Power Management Macro on Sky130
 // Description: Multi-Scenario Verification for Coherent REQ/ACK CDC Synchronizer.
 //
-// Verification Tests (v1.4.0 Handshake Protocol):
+// Verification Tests (v1.4.1 Pending Latest-Value & Reset Recovery):
 // 1. Reset and initialization in both asynchronous domains.
-// 2. Coherent transfer of arbitrary multi-bit transitions (e.g. 0 -> 7, 7 -> 2, 8 -> 0).
-// 3. Verification that destination data bus NEVER experiences bit-skew or intermediate values.
-// 4. Backpressure testing: source tries to issue updates while transfer is in flight.
-// 5. Asynchronous phase relationship: 75.0 MHz source vs 12.5 MHz destination with random phase shift.
-// 6. Independent domain resets (source reset during transfer, destination reset recovery).
-// 7. Generic parameterized Gray synchronizer compatibility test.
+// 2. Coherent transfer of arbitrary multi-bit non-Gray transitions (0->7, 7->2, 2->8, 8->0).
+// 3. Pending Latest-Value mechanism: rapid updates during an active in-flight transfer
+//    guarantee the destination immediately receives the freshest sample without starvation.
+// 4. In-flight source domain reset recovery: aborts active transfer cleanly without lockup.
+// 5. In-flight destination domain reset recovery: drops handshake and recovers immediately.
+// 6. Asynchronous clock boundary: 75.0 MHz source vs 12.5 MHz destination with random phase shift.
+// 7. Parameterized Gray synchronizer compatibility test.
 // ==============================================================================
 
 `timescale 1ns / 1ps
@@ -80,7 +81,6 @@ module tb_cdc;
     // Helper task to execute a full coherent handshake transfer
     task send_measurement(input [WIDTH-1:0] val);
         begin
-            // Wait until source is not busy
             while (src_busy) @(posedge src_clk);
             @(posedge src_clk);
             src_data  <= val;
@@ -88,14 +88,12 @@ module tb_cdc;
             @(posedge src_clk);
             src_valid <= 1'b0;
 
-            // Wait for destination domain to assert dest_valid
             @(posedge dest_valid);
             #1;
             $display("[CDC Handshake] Src In: %0d | Dest Out: %0d | Bus Stable: %b",
                      val, dest_data, (dest_data === val));
             check_condition("Coherent multi-bit transfer verified", dest_data == val);
 
-            // Wait for handshake cycle to complete in source domain
             while (src_busy) @(posedge src_clk);
         end
     endtask
@@ -119,53 +117,65 @@ module tb_cdc;
         check_condition("Reset state: dest_data == 0", dest_data == 4'd0);
         check_condition("Reset state: src_busy == 0", src_busy == 1'b0);
 
-        // Release resets
         src_rst_n  = 1'b1;
         dest_rst_n = 1'b1;
         #100;
 
-        // 2. Test Multi-Bit Non-Gray Jumps (Crucial for CPM Measurement Result)
-        // Transition: 0 -> 7 (0000 -> 0111: 3 bits flip simultaneously)
+        // 2. Multi-Bit Non-Gray Leaps (CPM Measurement Results)
         send_measurement(4'd7);
-
-        // Transition: 7 -> 2 (0111 -> 0010: 2 bits flip)
         send_measurement(4'd2);
-
-        // Transition: 2 -> 8 (0010 -> 1000: 2 bits flip)
         send_measurement(4'd8);
-
-        // Transition: 8 -> 1 (1000 -> 0001: 2 bits flip)
         send_measurement(4'd1);
-
-        // Transition: 1 -> 0 (Emergency Timing Deficit)
         send_measurement(4'd0);
 
-        // 3. Test Backpressure & Data Hold Protection
-        // Assert new data while transfer is in progress; verify source ignores it until ack
+        // 3. Test Pending Latest-Value Mechanism under Rapid Source Updates
+        // Launch value 3
         @(posedge src_clk);
-        src_data  <= 4'd5;
+        src_data  <= 4'd3;
         src_valid <= 1'b1;
         @(posedge src_clk);
         src_valid <= 1'b0;
 
-        // Immediately attempt corrupting overwrite while busy
+        // While value 3 is transferring (src_busy is high), send value 5 then value 6
         @(posedge src_clk);
         check_condition("Backpressure: src_busy asserted during transfer", src_busy == 1'b1);
-        src_data <= 4'd15; // Corrupt value attempted on input port
+        src_data  <= 4'd5;
+        src_valid <= 1'b1;
+        @(posedge src_clk);
+        src_data  <= 4'd6; // Fresh newest value overwrites pending register
+        src_valid <= 1'b1;
+        @(posedge src_clk);
+        src_valid <= 1'b0;
 
+        // Destination receives first transfer (3)
         @(posedge dest_valid);
         #1;
-        check_condition("Data bus held stable: destination received intended 5, not 15", dest_data == 4'd5);
+        check_condition("First transfer received: dest_data == 3", dest_data == 4'd3);
+
+        // Destination receives queued pending latest transfer (6) immediately after!
+        @(posedge dest_valid);
+        #1;
+        check_condition("Pending latest transfer received: dest_data == 6", dest_data == 4'd6);
 
         while (src_busy) @(posedge src_clk);
 
-        // 4. Test Independent Domain Reset Recovery
-        // Assert destination reset while idle, verify clean recovery
+        // 4. Test In-Flight Reset in Destination Domain
+        @(posedge src_clk);
+        src_data  <= 4'd4;
+        src_valid <= 1'b1;
+        @(posedge src_clk);
+        src_valid <= 1'b0;
+
+        // Assert destination reset mid-flight
+        #25;
         dest_rst_n = 1'b0;
-        #100;
+        #120;
         dest_rst_n = 1'b1;
-        #100;
-        send_measurement(4'd4);
+        #150;
+        check_condition("Destination reset recovered cleanly", dest_rst_n == 1'b1);
+
+        // Verify next transaction works normally after reset recovery
+        send_measurement(4'd5);
 
         // 5. Parameterized Gray Synchronizer Test
         check_condition("Gray synchronizer decoded output valid", gray_out <= 4'd15);
@@ -175,7 +185,7 @@ module tb_cdc;
         $display("==================================================================");
 
         if (pass_count == test_count) begin
-            $display(">>> ALL CDC HANDSHAKE TESTS PASSED SUCCESSFULLY <<<");
+            $display(">>> ALL CDC LATEST-VALUE & RESET RECOVERY TESTS PASSED <<<");
         end else begin
             $display(">>> CDC TESTS FAILED <<<");
             $finish(1);

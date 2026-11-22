@@ -153,8 +153,10 @@ The repository includes a comprehensive `Makefile` providing both domain-specifi
 | **Post-Route STA** | `make post_route_sta` | Performs post-route OpenSTA sign-off with SPEF parasitic back-annotation. |
 | **Layout Generation**| `make layout` | Generates Magic layout cells (`dac_5bit_array.mag`, `pmos_pass_2000u.mag`). |
 | **Design Rule Check**| `make drc` | Executes Magic DRC script and reports violation count. |
-| **Layout vs Schem**  | `make lvs` | Runs Netgen LVS comparing extracted netlist to SPICE schematic. |
+| **Structural LVS**   | `make lvs` | Runs structural device extraction and geometry audit on Magic extracted layouts. |
 | **Parasitic Extract**| `make pex` | Extracts parasitic RC network from analog layouts for post-layout simulation. |
+| **CPM Netlist Audit**| `make cpm-audit` | Audits synthesized CPM gate-level netlist confirming preserved delay stages. |
+| **EDA Regression**   | `make eda-regression` | Runs full local EDA regression suite (synthesis, STA, DRC, LVS, PEX, analog). |
 | **Closed-Loop Co-Sim**| `make model` | Runs closed-loop dynamic AVS simulation and produces transient performance plots. |
 | **PVT Matrix Report**| `make pvt_matrix` | Displays 6-corner PVT sign-off summary matrix. |
 | **Energy Curves**    | `make energy_curves` | Generates energy-per-operation vs supply voltage trade-off curves. |

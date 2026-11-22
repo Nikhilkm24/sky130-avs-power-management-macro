@@ -31,7 +31,7 @@ In sub-micron CMOS devices, propagation delay follows the alpha-power law:
 
 $$t_{pd} \approx \frac{k_{delay} \cdot V_{DD}}{(V_{DD} - V_{th})^\alpha}$$
 
-where $V_{th} \approx 0.45\text{ V}$ and $\alpha \approx 1.35$ for Sky130 standard NMOS devices. At $V_{DD} = 1.50\text{ V}$, the digital datapath exhibits high drive current and brief gate delays, producing excess positive slack at a 75–80 MHz clock target. Lowering the voltage to $1.05\text{ V}$ increases datapath delay toward the cycle boundary while drastically reducing dynamic energy per operation.
+where $V_{th} \approx 0.45\text{ V}$ and $\alpha \approx 1.35$ for Sky130 standard NMOS devices. At $V_{DD} = 1.50\text{ V}$, the digital datapath exhibits high drive current and brief gate delays, producing excess positive slack at a 75.0 MHz clock target. Lowering the voltage to $1.05\text{ V}$ increases datapath delay toward the cycle boundary while drastically reducing dynamic energy per operation.
 
 ### 2.2 Control Stability and Response Constraints
 Dynamic voltage adjustment must not introduce supply undershoots that violate instantaneous setup timing. This introduces key design trade-offs:

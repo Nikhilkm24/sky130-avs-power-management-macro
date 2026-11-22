@@ -4,7 +4,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: all sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model pvt_matrix energy_curves validate clean help test lint check build report fmt
+.PHONY: all sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model pvt_matrix energy_curves validate clean help test lint check build report fmt cpm-audit eda-regression
 
 all: sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model pvt_matrix energy_curves
 	@echo "=================================================================="
@@ -30,6 +30,8 @@ help:
 	@echo "  make validate       - Run complete Stage 1-5 validation suite"
 	@echo "  make all            - Run complete end-to-end pipeline"
 	@echo "  make clean          - Clean generated waveform files and logs"
+	@echo "  make cpm-audit      - Run automated Yosys gate-level netlist audit on CPM delay stages"
+	@echo "  make eda-regression - Run full local EDA regression suite (synthesis, STA, DRC, LVS, PEX, analog)"
 	@echo ""
 	@echo "Standard developer aliases (inspired by top-10 open-source repositories):"
 	@echo "  make test           - Run fast regression testbenches (RTL simulations and models)"
@@ -153,6 +155,15 @@ energy_curves:
 validate: all
 	@echo "=================================================================="
 	@echo "  Stage 1-5 Complete Validation Suite Executed Successfully!      "
+	@echo "=================================================================="
+
+cpm-audit:
+	@echo "--> Auditing synthesized CPM gate-level netlist for preserved delay stages..."
+	python3 scripts/audit_cpm_netlist.py
+
+eda-regression: lint sim model cpm-audit synth sta drc lvs pex analog post_route_sta mixed_signal
+	@echo "=================================================================="
+	@echo "  Full Local EDA Regression Suite Passed Successfully!           "
 	@echo "=================================================================="
 
 clean:

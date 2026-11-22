@@ -1,0 +1,7 @@
+corner_id,process,temp_c,voltage_v,source,t_mac_ns,slack_opensta_ns,t_rep_ns,tap_delay_ps,desc
+CORNER_1_TT,TT,25,1.800,OpenSTA (sky130hd_tt.lib),7.600,5.133,6.200,140.0,Nominal PDK Baseline
+CORNER_2_FF,FF,-40,1.950,OpenSTA (sky130hd_ff.lib),4.671,8.270,3.850,95.0,Cold Fast Maximum Margin
+CORNER_3_SS,SS,-40,1.400,OpenSTA (sky130hd_ss.lib),33.283,-20.740,28.500,550.0,Cold Slow Unregulated Sag
+CORNER_4_AVS_NOM,TT,25,1.200,Characterized AVS Regulated,9.870,2.863,8.950,180.0,AVS Regulated Mid-Rail
+CORNER_5_AVS_LOCK,TT,25,1.054,Characterized AVS Regulated,12.350,0.383,12.450,210.0,Target Settled Lock Point
+CORNER_6_AVS_MIN,FF,-40,0.940,Characterized AVS Regulated,11.820,0.913,11.750,200.0,Maximum Efficiency Harvest

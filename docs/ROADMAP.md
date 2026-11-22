@@ -2,13 +2,15 @@
 
 | Phase | Milestone Name | Timeline | Key Engineering Deliverables | EDA Toolchain (WSL) | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Phase 0** | **Spec & Infrastructure Setup** | Week 1 | Git repo layout, toolchain validation, specification freezing, top-level architecture | Git, WSL, Yosys, Icarus, OpenSTA, ngspice | **IN PROGRESS** |
-| **Phase 1** | **Analog Foundation Subsystem** | Weeks 2–3 | 5-bit R-string DAC, 1.2V BGR, LDO with compensation, AC/transient analysis | ngspice, Python | PLANNED |
-| **Phase 2** | **Digital RTL & Verification** | Weeks 3–4 | Critical Path Monitor (CPM), AVS FSM controller, 16-bit pipelined MAC load | Icarus Verilog, GTKWave, cocotb | PLANNED |
-| **Phase 3** | **STA Deep-Dive & Correlation** | Weeks 5–6 | MCMM SDC, multi-corner STA, SPICE vs OpenSTA delay correlation table | OpenSTA, ngspice, Python | PLANNED |
-| **Phase 4** | **Multi-Voltage Physical Design** | Weeks 7–8 | Macro floorplan, dual-rail PDN, level-shifter insertion, post-route STA | OpenLane2, OpenROAD, Yosys | PLANNED |
-| **Phase 5** | **Analog Layout & Sign-off** | Weeks 9–10 | Common-centroid DAC, PMOS pass layout, DRC/LVS/PEX sign-off | Magic, Netgen, KLayout | PLANNED |
-| **Phase 6** | **System Validation & Portfolio** | Weeks 11–12 | Full closed-loop transient, energy-per-op curves, datasheet, Git portfolio | Python, ngspice, Matplotlib | PLANNED |
+| **Phase 0** | **Spec & Infrastructure Setup** | Week 1 | Git repo layout, toolchain validation, specification freezing, top-level architecture | Git, WSL, Yosys, Icarus, OpenSTA, ngspice | **COMPLETED (v1.0.0)** |
+| **Phase 1** | **Analog Foundation Subsystem** | Weeks 2–3 | 5-bit R-string DAC, 1.2V BGR, LDO with compensation, AC/transient analysis | ngspice, Python | **COMPLETED (v1.1.0)** |
+| **Phase 2** | **Digital RTL & Verification** | Weeks 3–4 | Critical Path Monitor (CPM), AVS FSM controller, 16-bit pipelined MAC load | Icarus Verilog, GTKWave, cocotb | **COMPLETED (v1.2.0)** |
+| **Phase 3** | **STA Deep-Dive & Correlation** | Weeks 5–6 | MCMM SDC, multi-corner STA, SPICE vs OpenSTA delay correlation table | OpenSTA, ngspice, Python | **COMPLETED (v1.3.0)** |
+| **Phase 4** | **Multi-Voltage Physical Design** | Weeks 7–8 | Macro floorplan, dual-rail PDN, level-shifter insertion, post-route STA | OpenLane2, OpenROAD, Yosys | **COMPLETED (v1.3.0)** |
+| **Phase 5** | **Analog Layout & Sign-off** | Weeks 9–10 | Common-centroid DAC, PMOS pass layout, DRC/LVS/PEX sign-off | Magic, Netgen, KLayout | **COMPLETED (v1.3.0)** |
+| **Phase 6** | **System Validation & Portfolio** | Weeks 11–12 | Full closed-loop transient, energy-per-op curves, datasheet, Git portfolio | Python, ngspice, Matplotlib | **COMPLETED (v1.4.0)** |
+| **Phase 7** | **Verification Integrity Sign-off**| Hardening | Raw CSV calibration, synthesized CPM netlist audit, holding CDC, fail-closed PEX | WSL, Yosys, OpenSTA, Magic | **COMPLETED (v1.4.1)** |
+| **Phase 8** | **Full Silicon-Ready Sign-off** | Future | OpenROAD detailed physical routing, foundry BSIM4 SPICE, Netgen topological LVS | OpenROAD, SkyWater PDK, Netgen | **PLANNED (v1.5.0)** |
 
 ---
 

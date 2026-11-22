@@ -1,18 +1,22 @@
 """
-Detailed Routing and Parasitic Extraction (SPEF) Engine
+Analytical Interconnect Estimation and Pre-Route SPEF Modeling Engine
 Project: Closed-Loop AVS Power Management Macro on Sky130
+Milestone: v1.4.1 — Methodology Scoping & Claim Transparency
 
-Implements:
-1. Multi-layer detailed routing (met1 through met5) and via insertion.
-2. Interconnect RC parasitic extraction calibrated for Sky130 HD metal stack:
+Engineering Scope:
+1. Performs analytical wirelength and topology-based interconnect estimation for pre-route timing exploration.
+2. Applies technology-calibrated RC parameters for the SkyWater 130nm High-Density metal stack:
    - met1: R_sq = 0.125 Ohm/sq, C_area = 0.035 fF/um^2, C_fringe = 0.045 fF/um
    - met2: R_sq = 0.125 Ohm/sq, C_area = 0.020 fF/um^2, C_fringe = 0.038 fF/um
    - met3: R_sq = 0.125 Ohm/sq, C_area = 0.012 fF/um^2, C_fringe = 0.032 fF/um
    - met4: R_sq = 0.045 Ohm/sq, C_area = 0.008 fF/um^2, C_fringe = 0.025 fF/um
    - met5: R_sq = 0.028 Ohm/sq, C_area = 0.005 fF/um^2, C_fringe = 0.020 fF/um
-3. Generates IEEE 1481 Standard Parasitic Exchange Format (SPEF):
+3. Generates exploratory IEEE 1481 Standard Parasitic Exchange Format (SPEF):
    pd/results/avs_system_top.spef.
-4. Generates routing summary report: reports/routing_report.rpt.
+4. Generates estimation summary report: reports/routing_report.rpt.
+
+NOTE: This is an analytical interconnect estimation flow. Complete detailed routing,
+clock-tree synthesis, and post-route extraction via OpenROAD are targeted for milestone v1.5.0.
 """
 
 import os
