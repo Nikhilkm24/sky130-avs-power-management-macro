@@ -27,6 +27,7 @@ module tb_avs_top;
     wire [2:0]  fsm_state_out;
     wire [31:0] mac_result;
     wire        core_activity_pulse;
+    wire        cpm_path_select;
 
     // Instantiate UUT Top-Level
     avs_system_top #(
@@ -49,7 +50,8 @@ module tb_avs_top;
         .operand_a           (operand_a),
         .operand_b           (operand_b),
         .mac_result          (mac_result),
-        .core_activity_pulse (core_activity_pulse)
+        .core_activity_pulse (core_activity_pulse),
+        .cpm_path_select     (cpm_path_select)
     );
 
     // Clock Generation:
@@ -84,20 +86,38 @@ module tb_avs_top;
 
         // Run computation with idle activity
         repeat (100) @(posedge clk_core);
-        $display("[T=%0t] MAC Result (Idle mode): 0x%08h | DAC Voltage Code = %0d",
-                 $time, mac_result, dac_voltage_code);
+        $display("[T=%0t] MAC Result (Idle mode): 0x%08h | DAC Voltage Code = %0d | CPM Path Select = %0b",
+                 $time, mac_result, dac_voltage_code, cpm_path_select);
+        if (cpm_path_select !== 1'b0) begin
+            $display("[FAIL] Expected cpm_path_select == 0 in idle mode, got %0b", cpm_path_select);
+            $finish(1);
+        end
 
         // Trigger dynamic stress mode (high activity burst)
         $display("[T=%0t] Activating STRESS MODE (pseudo-random LFSR burst)...", $time);
         stress_mode = 1;
-        repeat (200) @(posedge clk_core);
+        repeat (10) @(posedge clk_core);
+        if (cpm_path_select !== 1'b1) begin
+            $display("[FAIL] Expected cpm_path_select == 1 in stress mode, got %0b", cpm_path_select);
+            $finish(1);
+        end
+        $display("[T=%0t] Sentinel Verified: cpm_path_select successfully switched to carry replica (%0b)",
+                 $time, cpm_path_select);
+        repeat (190) @(posedge clk_core);
         $display("[T=%0t] MAC Result (Stress mode): 0x%08h | Loop Settled = %0b",
                  $time, mac_result, loop_settled);
 
         // De-stress
         stress_mode = 0;
         repeat (150) @(posedge clk_core);
-        $display("[T=%0t] Deactivated stress mode. Final DAC code = %0d", $time, dac_voltage_code);
+        $display("[T=%0t] Deactivated stress mode. Final DAC code = %0d | CPM Path Select = %0b",
+                 $time, dac_voltage_code, cpm_path_select);
+        if (cpm_path_select !== 1'b0) begin
+            $display("[FAIL] Expected cpm_path_select == 0 after decay window, got %0b", cpm_path_select);
+            $finish(1);
+        end
+        $display("[T=%0t] Sentinel Verified: cpm_path_select safely returned to multiplier replica (%0b)",
+                 $time, cpm_path_select);
 
         $display("==================================================================");
         $display("   SUCCESS: Integrated AVS top-level simulation completed!        ");

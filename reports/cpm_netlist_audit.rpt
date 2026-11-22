@@ -1,15 +1,16 @@
 ====================================================================================
    SKY130 CRITICAL PATH MONITOR (CPM) GATE-LEVEL NETLIST AUDIT REPORT               
-   Milestone: Phase B (Step 5) — Standard Cell Physical Gate Mapping & Audit        
+   Milestone: Phase E (Step 8) — Dual-Replica Standard Cell Mapping & Audit        
 ====================================================================================
 Synthesis Tool        : Yosys Open SYnthesis Suite (Execution: Native)
 Top-Level Module      : critical_path_monitor
 Target Netlist File   : synth/cpm_gate_level_netlist.v
 Preserved Delay Stages: 7 / 7 (Taps 1 through 7)
 Physical Gate Mapping : sky130_fd_sc_hd__inv_1 (SkyWater 130nm HD Library)
-Replica Inverter Gates: 16 / 16 Standard Cells Preserved
+Multiplier Replica    : 16 / 16 Standard Cells Preserved (u_rep_inv0..15)
+Carry-Propagate Repl. : 18 / 18 Standard Cells Preserved (u_carry_inv0..17)
 Tap Stage Inverters   : 2 / 2 Cells per cpm_delay_stage Module (14 Total)
-Total Physical Gates  : 30 Standard Cell Primitives
+Total Physical Gates  : 48 / 48 Standard Cell Primitives Preserved
 Identity Collapse     : NONE DETECTED (PASSED - GATES PRESERVED)
 Distinct Tap Outputs  : 7 / 7 Unique Physical Nets
 Short Circuit Status  : ZERO SHORTS DETECTED (PASSED)
@@ -28,32 +29,55 @@ Tap    | Instance Name                  | Input Net            | Output Net     
 7      | gen_physical_taps[7].u_stage   | tap_wire[6]          | tap_wire[7]          | PHYSICAL GATES PRESERVED
 ============================================================================================
 ------------------------------------------------------------------------------------
-2. Replica Delay Chain Inverter Gate Audit (16 Stages)
+2. Multiplier Array Replica Chain Inverter Gate Audit (16 Stages)
 ------------------------------------------------------------------------------------
-Stage 0 : u_rep_inv0           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 1 : u_rep_inv1           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 2 : u_rep_inv2           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 3 : u_rep_inv3           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 4 : u_rep_inv4           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 5 : u_rep_inv5           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 6 : u_rep_inv6           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 7 : u_rep_inv7           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 8 : u_rep_inv8           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 9 : u_rep_inv9           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 10: u_rep_inv10          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 11: u_rep_inv11          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 12: u_rep_inv12          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 13: u_rep_inv13          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 14: u_rep_inv14          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
-Stage 15: u_rep_inv15          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 0 : u_rep_inv0           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 1 : u_rep_inv1           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 2 : u_rep_inv2           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 3 : u_rep_inv3           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 4 : u_rep_inv4           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 5 : u_rep_inv5           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 6 : u_rep_inv6           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 7 : u_rep_inv7           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 8 : u_rep_inv8           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 9 : u_rep_inv9           -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 10: u_rep_inv10          -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 11: u_rep_inv11          -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 12: u_rep_inv12          -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 13: u_rep_inv13          -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 14: u_rep_inv14          -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+Stage 15: u_rep_inv15          -> sky130_fd_sc_hd__inv_1 (Multiplier Replica Inverter)
+============================================================================================
+------------------------------------------------------------------------------------
+3. Accumulator Carry-Propagate Replica Chain Inverter Gate Audit (18 Stages)
+------------------------------------------------------------------------------------
+Stage 0 : u_carry_inv0         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 1 : u_carry_inv1         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 2 : u_carry_inv2         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 3 : u_carry_inv3         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 4 : u_carry_inv4         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 5 : u_carry_inv5         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 6 : u_carry_inv6         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 7 : u_carry_inv7         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 8 : u_carry_inv8         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 9 : u_carry_inv9         -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 10: u_carry_inv10        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 11: u_carry_inv11        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 12: u_carry_inv12        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 13: u_carry_inv13        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 14: u_carry_inv14        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 15: u_carry_inv15        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 16: u_carry_inv16        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
+Stage 17: u_carry_inv17        -> sky130_fd_sc_hd__inv_1 (Carry Replica Inverter)
 ============================================================================================
 AUDIT CONCLUSION:
-1. Physical Gate Preservation: All 16 replica delay inverters and 14 tapped delay line
-   inverters are mapped to genuine sky130_fd_sc_hd__inv_1 standard cell primitives.
-   Yosys blackbox retention prevented boolean logic reduction from collapsing inverters
-   into identity direct-wire assignments.
-2. Physical Separation: Each tap (tap_wire[1] through tap_wire[7]) is driven by a unique
+1. Physical Gate Preservation: All 16 multiplier replica inverters, 18 carry replica
+   inverters, and 14 tapped delay line inverters (48 total) are mapped to genuine
+   sky130_fd_sc_hd__inv_1 standard cell primitives with keep/dont_touch attributes.
+2. Dual-Replica Integrity: Both critical paths survive synthesis without logic reduction
+   or identity collapse into direct-wire assignments.
+3. Physical Separation: Each tap (tap_wire[1] through tap_wire[7]) is driven by a unique
    non-inverting dual-inverter buffer stage with distinct input and output nets.
-3. Sampling Fidelity: The sampling registers capture 8 distinct physical points along the
-   propagating wavefront, guaranteeing genuine delay-quantized thermometer code output.
+4. Sampling Fidelity: The sampling registers capture 8 distinct physical points along the
+   propagating wavefront across both operating paths, solving critical-path masking.
 ====================================================================================

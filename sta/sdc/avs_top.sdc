@@ -48,8 +48,8 @@ set_output_delay -clock clk_io -min 1.0 [get_ports {dac_voltage_code* timing_haz
 # Core domain I/O delays
 set_input_delay  -clock clk_core -max 2.0 [get_ports {load_enable stress_mode operand_a* operand_b*}]
 set_input_delay  -clock clk_core -min 0.5 [get_ports {load_enable stress_mode operand_a* operand_b*}]
-set_output_delay -clock clk_core -max 2.5 [get_ports {mac_result* core_activity_pulse}]
-set_output_delay -clock clk_core -min 0.5 [get_ports {mac_result* core_activity_pulse}]
+set_output_delay -clock clk_core -max 2.5 [get_ports {mac_result* core_activity_pulse cpm_path_select}]
+set_output_delay -clock clk_core -min 0.5 [get_ports {mac_result* core_activity_pulse cpm_path_select}]
 
 # Drive and Load Constraints
 set_driving_cell -lib_cell sky130_fd_sc_hd__inv_2 [all_inputs]

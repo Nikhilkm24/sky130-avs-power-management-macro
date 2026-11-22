@@ -21,6 +21,7 @@ module tb_cpm;
     reg                 clk_core;
     reg                 rst_n;
     reg                 enable;
+    reg                 path_select;
 
     // Default UUT (Nominal Operating Condition: V_CORE ~ 1.20V, Margin = 8)
     wire [3:0]          margin_nom;
@@ -30,12 +31,14 @@ module tb_cpm;
 
     critical_path_monitor #(
         .NUM_TAPS         (NUM_TAPS),
-        .REPLICA_DELAY_NS (9.500),  // Fast path: arrives well before 13.333 ns
+        .REPLICA_DELAY_NS (9.500),  // Fast multiplier path: arrives well before 13.333 ns
+        .CARRY_DELAY_NS   (10.200), // Fast carry path
         .TAP_DELAY_NS     (0.180)
     ) dut_nom (
         .clk_core        (clk_core),
         .rst_n           (rst_n),
         .enable          (enable),
+        .path_select     (path_select),
         .margin_code     (margin_nom),
         .thermometer_raw (therm_nom),
         .timing_hazard   (hazard_nom),
@@ -43,7 +46,8 @@ module tb_cpm;
     );
 
     // Target Settled UUT (Target Condition: V_CORE ~ 1.054V, Target Margin = 2)
-    // T_rep + 1*T_tap = 13.00 + 0.20 = 13.20 ns <= 13.333 ns -> Tap 0, 1 match -> Margin = 2
+    // T_rep + 1*T_tap = 12.80 + 0.20 = 13.00 ns <= 13.333 ns -> Tap 0, 1, 2 match -> Margin = 3
+    // Under Carry path: T_carry = 13.20 ns -> Only Tap 0 matches -> Margin drops to 1
     wire [3:0]          margin_target;
     wire [NUM_TAPS-1:0] therm_target;
     wire                hazard_target;
@@ -51,12 +55,14 @@ module tb_cpm;
 
     critical_path_monitor #(
         .NUM_TAPS         (NUM_TAPS),
-        .REPLICA_DELAY_NS (13.000),
+        .REPLICA_DELAY_NS (12.800),
+        .CARRY_DELAY_NS   (13.200),
         .TAP_DELAY_NS     (0.200)
     ) dut_target (
         .clk_core        (clk_core),
         .rst_n           (rst_n),
         .enable          (enable),
+        .path_select     (path_select),
         .margin_code     (margin_target),
         .thermometer_raw (therm_target),
         .timing_hazard   (hazard_target),
@@ -73,11 +79,13 @@ module tb_cpm;
     critical_path_monitor #(
         .NUM_TAPS         (NUM_TAPS),
         .REPLICA_DELAY_NS (13.600),
+        .CARRY_DELAY_NS   (14.000),
         .TAP_DELAY_NS     (0.220)
     ) dut_hazard (
         .clk_core        (clk_core),
         .rst_n           (rst_n),
         .enable          (enable),
+        .path_select     (path_select),
         .margin_code     (margin_hazard),
         .thermometer_raw (therm_hazard),
         .timing_hazard   (hazard_hazard),
@@ -108,9 +116,10 @@ module tb_cpm;
         $display("   Clock: 75.0 MHz (T_cycle = %0.3f ns)                           ", CLK_PERIOD);
         $display("==================================================================");
 
-        clk_core = 1'b0;
-        rst_n    = 1'b0;
-        enable   = 1'b0;
+        clk_core    = 1'b0;
+        rst_n       = 1'b0;
+        enable      = 1'b0;
+        path_select = 1'b0;
 
         // 1. Reset Test
         #(CLK_PERIOD * 3);
@@ -133,11 +142,27 @@ module tb_cpm;
         check_condition("Nominal delay: timing_hazard deasserted", hazard_nom == 1'b0);
         check_condition("Nominal delay: margin_valid asserted", valid_nom == 1'b1);
 
-        // 4. Test Target Operating Condition (AVS Settled Lock Point)
-        $display("[Target Model]  Thermometer: %b | Margin Code: %0d | Hazard: %b",
+        // 4. Test Target Operating Condition (AVS Settled Lock Point, Path 0: Multiplier)
+        $display("[Target Model - Path 0] Thermometer: %b | Margin Code: %0d | Hazard: %b",
                  therm_target, margin_target, hazard_target);
-        check_condition("Target delay: partial wavefront matched (Margin == 2)", margin_target == 4'd2);
+        check_condition("Target delay (Path 0): partial wavefront matched (Margin == 3)", margin_target == 4'd3);
         check_condition("Target delay: timing_hazard deasserted", hazard_target == 1'b0);
+
+        // 4B. Test Phase E Dual-Replica Switching (Path 1: Accumulator Carry-Propagate)
+        $display("[Dual-Replica Test] Switching path_select = 1 (Accumulator Carry-Propagate Replica)...");
+        path_select = 1'b1;
+        repeat (6) @(posedge clk_core);
+        $display("[Target Model - Path 1] Thermometer: %b | Margin Code: %0d | Hazard: %b",
+                 therm_target, margin_target, hazard_target);
+        check_condition("Carry replica active: margin drops due to longer carry propagation (Margin == 1)",
+                        margin_target == 4'd1);
+
+        // 4C. Revert to Multiplier Replica
+        $display("[Dual-Replica Test] Reverting path_select = 0 (Multiplier Array Replica)...");
+        path_select = 1'b0;
+        repeat (6) @(posedge clk_core);
+        check_condition("Multiplier replica restored: margin recovers (Margin == 3)",
+                        margin_target == 4'd3);
 
         // 5. Test Timing Deficit / Hazard Condition (Replica delay > T_clk)
         $display("[Hazard Model]  Thermometer: %b | Margin Code: %0d | Hazard: %b",

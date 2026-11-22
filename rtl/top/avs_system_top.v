@@ -3,8 +3,8 @@
 // Project: Closed-Loop AVS Power Management Macro on Sky130
 // Description: Top-Level Digital Macro integrating:
 //              - AVS Controller FSM (Domain: VDD_1V8)
-//              - Critical Path Monitor (Domain: VDD_CORE)
-//              - Pipelined MAC Load (Domain: VDD_CORE)
+//              - Workload-Adaptive Dual-Replica CPM (Domain: VDD_CORE, Phase E)
+//              - Pipelined MAC Load with Activity Sentinel (Domain: VDD_CORE)
 //              - Level Shifters & Coherent REQ/ACK CDC Handshake Synchronizer
 // ==============================================================================
 
@@ -39,7 +39,8 @@ module avs_system_top #(
     input  wire [15:0]             operand_a,
     input  wire [15:0]             operand_b,
     output wire [31:0]             mac_result,
-    output wire                    core_activity_pulse
+    output wire                    core_activity_pulse,
+    output wire                    cpm_path_select  // 0 = Multiplier, 1 = Carry replica
 );
 
     // --------------------------------------------------------------------------
@@ -56,10 +57,12 @@ module avs_system_top #(
     level_shifter_hl #(.WIDTH(16)) u_ls_opb  (.in_high(operand_b),   .out_low(op_b_core));
 
     // --------------------------------------------------------------------------
-    // Instantiation: Pipelined MAC Digital Load (VDD_CORE Domain)
+    // Instantiation: Pipelined MAC Digital Load with Activity Sentinel (VDD_CORE Domain)
     // --------------------------------------------------------------------------
     wire [31:0] mac_result_core;
     wire        activity_pulse_core;
+    wire        path_select_core;
+    wire        workload_burst_core;
 
     pipelined_mac_load u_load (
         .clk_core       (clk_core),
@@ -69,11 +72,13 @@ module avs_system_top #(
         .operand_a_in   (op_a_core),
         .operand_b_in   (op_b_core),
         .mac_result_out (mac_result_core),
-        .activity_pulse (activity_pulse_core)
+        .activity_pulse (activity_pulse_core),
+        .path_select    (path_select_core),
+        .workload_burst (workload_burst_core)
     );
 
     // --------------------------------------------------------------------------
-    // Instantiation: Critical Path Monitor (VDD_CORE Domain)
+    // Instantiation: Workload-Adaptive Dual-Replica Critical Path Monitor (VDD_CORE Domain)
     // --------------------------------------------------------------------------
     wire [MARGIN_WIDTH-1:0] cpm_margin_core;
     wire [NUM_TAPS-1:0]     cpm_thermo_core;
@@ -84,6 +89,7 @@ module avs_system_top #(
         .clk_core        (clk_core),
         .rst_n           (rst_n),
         .enable          (1'b1),
+        .path_select     (path_select_core),
         .margin_code     (cpm_margin_core),
         .thermometer_raw (cpm_thermo_core),
         .timing_hazard   (cpm_hazard_core),
@@ -97,14 +103,17 @@ module avs_system_top #(
     wire                    cpm_valid_ls;
     wire [31:0]             mac_result_ls;
     wire                    activity_pulse_ls;
+    wire                    path_select_ls;
 
     level_shifter_lh #(.WIDTH(MARGIN_WIDTH)) u_ls_cpm  (.in_low(cpm_margin_core),    .out_high(cpm_margin_ls));
     level_shifter_lh #(.WIDTH(1))            u_ls_val  (.in_low(cpm_valid_core),     .out_high(cpm_valid_ls));
     level_shifter_lh #(.WIDTH(32))           u_ls_mac  (.in_low(mac_result_core),    .out_high(mac_result_ls));
     level_shifter_lh #(.WIDTH(1))            u_ls_act  (.in_low(activity_pulse_core),.out_high(activity_pulse_ls));
+    level_shifter_lh #(.WIDTH(1))            u_ls_path (.in_low(path_select_core),   .out_high(path_select_ls));
 
     assign mac_result          = mac_result_ls;
     assign core_activity_pulse = activity_pulse_ls;
+    assign cpm_path_select     = path_select_ls;
 
     // --------------------------------------------------------------------------
     // Coherent REQ/ACK Handshake Synchronizer: Safe crossing of CPM margin into Controller Domain

@@ -18,15 +18,15 @@ module \$paramod$63fd6cb0ae4a1613894f8ee5e556ae059b8e22df\cpm_delay_stage (in, o
   assign out = inv2_out;
 endmodule
 
-module critical_path_monitor(clk_core, rst_n, enable, margin_code, thermometer_raw, timing_hazard, margin_valid);
+module critical_path_monitor(clk_core, rst_n, enable, path_select, margin_code, thermometer_raw, timing_hazard, margin_valid);
   wire _00_;
-  wire [3:0] _01_;
-  wire [3:0] _02_;
-  wire [3:0] _03_;
-  wire [3:0] _04_;
-  wire [3:0] _05_;
-  wire [3:0] _06_;
-  wire [3:0] _07_;
+  wire _01_;
+  wire _02_;
+  wire _03_;
+  wire _04_;
+  wire _05_;
+  wire _06_;
+  wire _07_;
   wire _08_;
   wire _09_;
   wire _10_;
@@ -36,24 +36,36 @@ module critical_path_monitor(clk_core, rst_n, enable, margin_code, thermometer_r
   wire _14_;
   wire _15_;
   wire _16_;
+  wire [3:0] _17_;
+  wire [3:0] _18_;
+  wire [3:0] _19_;
+  wire [3:0] _20_;
+  wire [3:0] _21_;
+  wire [3:0] _22_;
+  wire [3:0] _23_;
+  wire [3:0] _24_;
+  wire [17:0] carry_net;
   input clk_core;
   wire clk_core;
   input enable;
   wire enable;
   reg launch_flop;
-  reg launch_flop_d1;
+  reg launch_level_d;
   output [3:0] margin_code;
   reg [3:0] margin_code;
-  wire [3:0] margin_decoded;
   output margin_valid;
   reg margin_valid;
+  input path_select;
+  wire path_select;
+  wire [7:0] raw_thermometer_comb;
+  wire rep_carry_out;
+  wire rep_mult_out;
   wire [15:0] rep_net;
   wire replica_path_out;
   wire replica_start;
   input rst_n;
   wire rst_n;
   reg [7:0] sample_flops;
-  wire [7:0] tap_match;
   wire [7:0] tap_wire;
   output [7:0] thermometer_raw;
   wire [7:0] thermometer_raw;
@@ -61,48 +73,56 @@ module critical_path_monitor(clk_core, rst_n, enable, margin_code, thermometer_r
   reg timing_hazard;
   always @(posedge clk_core, negedge rst_n)
     if (!rst_n) margin_code <= 4'h0;
-    else if (enable) margin_code <= margin_decoded;
+    else if (enable) margin_code <= _24_;
   always @(posedge clk_core, negedge rst_n)
     if (!rst_n) timing_hazard <= 1'h0;
-    else if (enable) timing_hazard <= _08_;
+    else if (enable) timing_hazard <= _15_;
+  always @(posedge clk_core, negedge rst_n)
+    if (!rst_n) sample_flops <= 8'h00;
+    else if (enable) sample_flops <= { tap_wire[7:1], replica_path_out };
   always @(posedge clk_core, negedge rst_n)
     if (!rst_n) launch_flop <= 1'h0;
-    else if (enable) launch_flop <= _15_;
-  assign tap_match[0] = sample_flops[0] == launch_flop_d1;
-  assign tap_match[1] = sample_flops[1] == launch_flop_d1;
-  assign tap_match[2] = sample_flops[2] == launch_flop_d1;
-  assign tap_match[3] = sample_flops[3] == launch_flop_d1;
-  assign tap_match[4] = sample_flops[4] == launch_flop_d1;
-  assign tap_match[5] = sample_flops[5] == launch_flop_d1;
-  assign tap_match[6] = sample_flops[6] == launch_flop_d1;
-  assign thermometer_raw[7] = sample_flops[7] == launch_flop_d1;
-  assign _08_ = ! margin_decoded;
-  assign _09_ = tap_match[0] && tap_match[1];
-  assign _10_ = _09_ && tap_match[2];
-  assign _11_ = _10_ && tap_match[3];
-  assign _12_ = _11_ && tap_match[4];
-  assign _13_ = _12_ && tap_match[5];
-  assign _14_ = _13_ && tap_match[6];
-  assign _15_ = ~ launch_flop;
+    else if (enable) launch_flop <= _01_;
+  assign raw_thermometer_comb[0] = sample_flops[0] == launch_level_d;
+  assign raw_thermometer_comb[1] = sample_flops[1] == launch_level_d;
+  assign raw_thermometer_comb[2] = sample_flops[2] == launch_level_d;
+  assign raw_thermometer_comb[3] = sample_flops[3] == launch_level_d;
+  assign raw_thermometer_comb[4] = sample_flops[4] == launch_level_d;
+  assign raw_thermometer_comb[5] = sample_flops[5] == launch_level_d;
+  assign raw_thermometer_comb[6] = sample_flops[6] == launch_level_d;
+  assign raw_thermometer_comb[7] = sample_flops[7] == launch_level_d;
+  assign _01_ = ~ launch_flop;
   always @(posedge clk_core, negedge rst_n)
     if (!rst_n) margin_valid <= 1'h0;
     else margin_valid <= _00_;
   always @(posedge clk_core, negedge rst_n)
-    if (!rst_n) sample_flops <= 8'h00;
-    else sample_flops <= { tap_wire[7:1], replica_path_out };
-  always @(posedge clk_core, negedge rst_n)
-    if (!rst_n) launch_flop_d1 <= 1'h0;
-    else launch_flop_d1 <= launch_flop;
+    if (!rst_n) launch_level_d <= 1'h0;
+    else launch_level_d <= launch_flop;
   assign _00_ = enable ? 1'h1 : 1'h0;
-  assign margin_decoded = _16_ ? 4'h8 : _07_;
-  assign _07_ = _14_ ? 4'h7 : _06_;
-  assign _06_ = _13_ ? 4'h6 : _05_;
-  assign _05_ = _12_ ? 4'h5 : _04_;
-  assign _04_ = _11_ ? 4'h4 : _03_;
-  assign _03_ = _10_ ? 4'h3 : _02_;
-  assign _02_ = _09_ ? 4'h2 : _01_;
-  assign _01_ = tap_match[0] ? 4'h1 : 4'h0;
-  assign _16_ = & { tap_match[6:0], thermometer_raw[7] };
+  assign _02_ = raw_thermometer_comb[0] ? 1'h0 : 1'h1;
+  assign _03_ = _04_ ? 1'h0 : _02_;
+  assign _05_ = _06_ ? 1'h0 : _03_;
+  assign _07_ = _08_ ? 1'h0 : _05_;
+  assign _09_ = _10_ ? 1'h0 : _07_;
+  assign _11_ = _12_ ? 1'h0 : _09_;
+  assign _13_ = _14_ ? 1'h0 : _11_;
+  assign _15_ = _16_ ? 1'h0 : _13_;
+  assign _17_ = raw_thermometer_comb[0] ? 4'h1 : 4'h0;
+  assign _18_ = _04_ ? 4'h2 : _17_;
+  assign _04_ = raw_thermometer_comb[1:0] == 2'h3;
+  assign _19_ = _06_ ? 4'h3 : _18_;
+  assign _06_ = raw_thermometer_comb[2:0] == 3'h7;
+  assign _20_ = _08_ ? 4'h4 : _19_;
+  assign _08_ = raw_thermometer_comb[3:0] == 4'hf;
+  assign _21_ = _10_ ? 4'h5 : _20_;
+  assign _10_ = raw_thermometer_comb[4:0] == 5'h1f;
+  assign _22_ = _12_ ? 4'h6 : _21_;
+  assign _12_ = raw_thermometer_comb[5:0] == 6'h3f;
+  assign _23_ = _14_ ? 4'h7 : _22_;
+  assign _14_ = raw_thermometer_comb[6:0] == 7'h7f;
+  assign _24_ = _16_ ? 4'h8 : _23_;
+  assign _16_ = raw_thermometer_comb == 8'hff;
+  assign replica_path_out = path_select ? rep_carry_out : rep_mult_out;
   \$paramod$63fd6cb0ae4a1613894f8ee5e556ae059b8e22df\cpm_delay_stage  \gen_physical_taps[1].u_stage  (
     .in(replica_path_out),
     .out(tap_wire[1])
@@ -130,6 +150,78 @@ module critical_path_monitor(clk_core, rst_n, enable, margin_code, thermometer_r
   \$paramod$63fd6cb0ae4a1613894f8ee5e556ae059b8e22df\cpm_delay_stage  \gen_physical_taps[7].u_stage  (
     .in(tap_wire[6]),
     .out(tap_wire[7])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv0 (
+    .A(launch_flop),
+    .Y(carry_net[0])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv1 (
+    .A(carry_net[0]),
+    .Y(carry_net[1])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv10 (
+    .A(carry_net[9]),
+    .Y(carry_net[10])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv11 (
+    .A(carry_net[10]),
+    .Y(carry_net[11])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv12 (
+    .A(carry_net[11]),
+    .Y(carry_net[12])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv13 (
+    .A(carry_net[12]),
+    .Y(carry_net[13])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv14 (
+    .A(carry_net[13]),
+    .Y(carry_net[14])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv15 (
+    .A(carry_net[14]),
+    .Y(carry_net[15])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv16 (
+    .A(carry_net[15]),
+    .Y(carry_net[16])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv17 (
+    .A(carry_net[16]),
+    .Y(rep_carry_out)
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv2 (
+    .A(carry_net[1]),
+    .Y(carry_net[2])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv3 (
+    .A(carry_net[2]),
+    .Y(carry_net[3])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv4 (
+    .A(carry_net[3]),
+    .Y(carry_net[4])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv5 (
+    .A(carry_net[4]),
+    .Y(carry_net[5])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv6 (
+    .A(carry_net[5]),
+    .Y(carry_net[6])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv7 (
+    .A(carry_net[6]),
+    .Y(carry_net[7])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv8 (
+    .A(carry_net[7]),
+    .Y(carry_net[8])
+  );
+  sky130_fd_sc_hd__inv_1 u_carry_inv9 (
+    .A(carry_net[8]),
+    .Y(carry_net[9])
   );
   sky130_fd_sc_hd__inv_1 u_rep_inv0 (
     .A(launch_flop),
@@ -161,7 +253,7 @@ module critical_path_monitor(clk_core, rst_n, enable, margin_code, thermometer_r
   );
   sky130_fd_sc_hd__inv_1 u_rep_inv15 (
     .A(rep_net[14]),
-    .Y(replica_path_out)
+    .Y(rep_mult_out)
   );
   sky130_fd_sc_hd__inv_1 u_rep_inv2 (
     .A(rep_net[1]),
@@ -195,9 +287,9 @@ module critical_path_monitor(clk_core, rst_n, enable, margin_code, thermometer_r
     .A(rep_net[8]),
     .Y(rep_net[9])
   );
-  assign rep_net[15] = replica_path_out;
+  assign carry_net[17] = rep_carry_out;
+  assign rep_net[15] = rep_mult_out;
   assign replica_start = launch_flop;
-  assign tap_match[7] = thermometer_raw[7];
   assign tap_wire[0] = replica_path_out;
-  assign thermometer_raw[6:0] = tap_match[6:0];
+  assign thermometer_raw = raw_thermometer_comb;
 endmodule

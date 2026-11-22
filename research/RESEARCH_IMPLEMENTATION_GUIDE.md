@@ -44,8 +44,8 @@ The project demonstrates strong publication potential for **IEEE Transactions on
 
 | Subsystem | Source Files | Tool Executed | Input Data | Raw Output | Claimed Metric | Actual Ground Truth Evidence | Classification & Limitation |
 |---|---|---|---|---|---|---|---|
-| **CPM Replica Chain** | `rtl/cpm/critical_path_monitor.v` | Icarus / Yosys | 16x `sky130_fd_sc_hd__inv_1` structural gates | `synth/cpm_gate_level_netlist.v` | 16-stage physical replica delay chain | 16 standard cells preserved in netlist with keep/dont_touch attributes | **[TOOL-VERIFIED]** Phase B physical mapping complete |
-| **CPM Tapped Delay Line** | `rtl/cpm/critical_path_monitor.v` | Yosys 0.33 | 14x `sky130_fd_sc_hd__inv_1` (7 dual-inverter stages) | `synth/cpm_gate_level_netlist.v` | 7 physical delay stages (30 total inverters) | Verified by `audit_cpm_netlist.py`; zero out=in collapse; 7 distinct tap nets | **[TOOL-VERIFIED]** Phase B physical mapping complete |
+| **CPM Dual-Replica Chain** | `rtl/cpm/critical_path_monitor.v` | Icarus / Yosys | 16x multiplier + 18x carry `sky130_fd_sc_hd__inv_1` structural gates | `synth/cpm_gate_level_netlist.v` | Dual-replica (34 replica inverters, 48 total gates) | 34 replica cells preserved in netlist with keep/dont_touch; multiplexer driven by activity sentinel | **[TOOL-VERIFIED]** Phase E dual-replica complete |
+| **CPM Tapped Delay Line** | `rtl/cpm/critical_path_monitor.v` | Yosys 0.33 | 14x `sky130_fd_sc_hd__inv_1` (7 dual-inverter stages) | `synth/cpm_gate_level_netlist.v` | 7 physical delay stages (48 total inverters) | Verified by `audit_cpm_netlist.py`; zero out=in collapse; 7 distinct tap nets | **[TOOL-VERIFIED]** Phase E 48-gate audit complete |
 | **CPM Calibration** | `models/cpm_calibration.py` | Python / OpenSTA | `reports/sta_cpm_raw_measurements.csv` | `reports/cpm_calibration.rpt` | $R^2(t_{\mathrm{MAC}}, t_{\mathrm{rep}}) = 0.9878$, $R^2_{\mathrm{active}} = 0.9152$, Worst-case error = $0.0\text{ ps}$ | Direct ingestion of expanded $N=24$ OpenSTA & characterized dataset; zero optimistic error | **[TOOL-VERIFIED]** Expanded to $N=24$ across PVT |
 | **CDC Synchronizer** | `rtl/level_shifter/level_shifter.v` | Icarus Verilog | `sim/tb_cdc.v` (13 test vectors) | `sim/tb_cdc.vvp` log | Latest-value holding ($\le 320\text{ ns}$) | Pending-update register prevents stale-data FIFO starvation; 13/13 passed | **[TOOL-VERIFIED]** Protocol verified |
 | **Analog PEX & Droop** | `analog/layout/run_pex.py` | Magic 8.3 / ngspice | `pmos_pass_2000u.mag`, `dac_5bit_array.mag` | `reports/analog_pex_comparison.rpt` | $1.054\text{ V}$ steady, $72.9\text{ mV}$ droop | 909 PMOS caps ($1240.75\text{ fF}$), 415 DAC caps; fail-closed execution | **[TOOL-VERIFIED]** Uses Level-1 SPICE models |
@@ -266,7 +266,7 @@ The execution roadmap is structured into 11 rigorous, sequential milestones:
 - [x] **Step 5 (Phase B):** Map CPM delay stages to physical `sky130_fd_sc_hd__inv_1` gates and re-run Yosys netlist audit.
 - [x] **Step 6 (Phase C):** Expand multi-corner OpenSTA dataset from $N=6$ to $N=24$ characterization points.
 - [x] **Step 7 (Phase D):** Implement mathematical uncertainty budgeting script `models/uncertainty_cpm.py`.
-- [ ] **Step 8 (Phase E):** Implement dual-replica accumulator carry-path monitor and workload sentinel in RTL.
+- [x] **Step 8 (Phase E):** Implement dual-replica accumulator carry-path monitor and workload sentinel in RTL.
 - [ ] **Step 9 (Phase F):** Integrate foundry SkyWater 130nm BSIM4 device models into analog SPICE netlists.
 - [ ] **Step 10 (Phase G):** Update AVS controller FSM with slew-settling lock timer and activity gating.
 - [ ] **Step 11 (Phase H):** Run full mixed-signal transistor-level closed-loop co-simulation.

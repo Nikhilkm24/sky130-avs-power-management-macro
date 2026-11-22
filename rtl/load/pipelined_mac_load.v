@@ -1,12 +1,11 @@
 // ==============================================================================
 // Module: pipelined_mac_load.v
 // Project: Closed-Loop AVS Power Management Macro on Sky130
-// Description: Pipelined 16-bit Multiplier-Accumulator (MAC) Digital Load.
-//              Contains a built-in pseudo-random LFSR activity generator
-//              to induce dynamic power steps and realistic current transients
-//              on the regulated VDD_CORE rail.
-//              Pipelined with 2-stage multiplier & 2-stage 16-bit accumulator
-//              to ensure positive setup slack closure (> +1.0 ns) at 75-80 MHz.
+// Description: Pipelined 16-bit Multiplier-Accumulator (MAC) Digital Load
+//              with integrated Dynamic Workload Activity Sentinel (Phase E).
+//              Monitors arithmetic switching activity and carry generation to
+//              dynamically select between Multiplier Array and Carry-Propagate
+//              replica paths, resolving critical-path masking during compute bursts.
 // ==============================================================================
 
 `timescale 1ns / 1ps
@@ -19,7 +18,9 @@ module pipelined_mac_load (
     input  wire [15:0] operand_a_in,    // Deterministic operand A
     input  wire [15:0] operand_b_in,    // Deterministic operand B
     output reg  [31:0] mac_result_out,  // 32-bit accumulated result
-    output reg         activity_pulse   // Toggling activity monitor pin
+    output reg         activity_pulse,  // Toggling activity monitor pin
+    output reg         path_select,     // Dynamic replica select: 0 = Multiplier, 1 = Carry
+    output reg         workload_burst   // Asserted during compute bursts / carry propagation
 );
 
     // --------------------------------------------------------------------------
@@ -101,6 +102,46 @@ module pipelined_mac_load (
             acc_high_reg   <= acc_high_comb[15:0];
             mac_result_out <= {acc_high_comb[15:0], acc_low_reg};
             activity_pulse <= ^mac_result_out;
+        end
+    end
+
+    // --------------------------------------------------------------------------
+    // Workload Activity Sentinel (Phase E Implementation)
+    // Tracks dynamic operand Hamming toggles and carry generation across cycles.
+    // When compute bursts or multi-bit carry chains occur, selects the Accumulator
+    // Carry-Propagate replica to prevent critical-path masking.
+    // --------------------------------------------------------------------------
+    wire [15:0] a_diff = op_a ^ reg_a_s1;
+    wire [15:0] b_diff = op_b ^ reg_b_s1;
+    wire [4:0]  a_toggles = a_diff[0] + a_diff[1] + a_diff[2] + a_diff[3] +
+                            a_diff[4] + a_diff[5] + a_diff[6] + a_diff[7] +
+                            a_diff[8] + a_diff[9] + a_diff[10] + a_diff[11] +
+                            a_diff[12] + a_diff[13] + a_diff[14] + a_diff[15];
+    wire [4:0]  b_toggles = b_diff[0] + b_diff[1] + b_diff[2] + b_diff[3] +
+                            b_diff[4] + b_diff[5] + b_diff[6] + b_diff[7] +
+                            b_diff[8] + b_diff[9] + b_diff[10] + b_diff[11] +
+                            b_diff[12] + b_diff[13] + b_diff[14] + b_diff[15];
+    wire [5:0]  total_toggles = a_toggles + b_toggles;
+
+    reg [2:0] burst_decay_cnt;
+    always @(posedge clk_core or negedge rst_n) begin
+        if (!rst_n) begin
+            burst_decay_cnt <= 3'd0;
+            path_select     <= 1'b0;
+            workload_burst  <= 1'b0;
+        end else if (load_enable) begin
+            if (stress_mode || acc_carry_s3a || (total_toggles >= 6'd8)) begin
+                burst_decay_cnt <= 3'd7; // Saturate 7-cycle decay timer
+                path_select     <= 1'b1; // Direct monitor to Carry-Propagate Replica
+                workload_burst  <= 1'b1;
+            end else if (burst_decay_cnt > 3'd0) begin
+                burst_decay_cnt <= burst_decay_cnt - 3'd1;
+                path_select     <= 1'b1; // Maintain carry replica during active window
+                workload_burst  <= 1'b1;
+            end else begin
+                path_select     <= 1'b0; // Revert to Multiplier Array Replica
+                workload_burst  <= 1'b0;
+            end
         end
     end
 
