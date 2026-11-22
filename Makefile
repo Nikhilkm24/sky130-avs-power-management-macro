@@ -4,11 +4,11 @@
 
 SHELL := /bin/bash
 
-.PHONY: all sim analog synth sta pd post_route_sta model clean help
+.PHONY: all sim analog synth sta pd post_route_sta layout drc lvs pex model clean help
 
-all: sim analog synth sta pd post_route_sta model
+all: sim analog synth sta pd post_route_sta layout drc lvs pex model
 	@echo "=================================================================="
-	@echo "  All verification, synthesis, PD, and STA phases completed cleanly! "
+	@echo "  All verification, synthesis, PD, layout, and STA completed!     "
 	@echo "=================================================================="
 
 help:
@@ -19,6 +19,10 @@ help:
 	@echo "  make sta            - Run pre-route multi-corner OpenSTA timing analysis (TT, SS, FF)"
 	@echo "  make pd             - Run digital physical design (Floorplan, PDN, Placement, CTS, Route, SPEF)"
 	@echo "  make post_route_sta - Run post-route OpenSTA timing analysis with back-annotated SPEF"
+	@echo "  make layout         - Generate custom analog layouts in Magic (DAC matrix & PMOS pass)"
+	@echo "  make drc            - Run Magic Design Rule Checking on analog layouts"
+	@echo "  make lvs            - Run Netgen LVS comparing layout against schematic"
+	@echo "  make pex            - Run Parasitic Extraction (PEX) & post-layout comparison"
 	@echo "  make model          - Run closed-loop co-simulation and generate energy plots"
 	@echo "  make all            - Run complete end-to-end pipeline"
 	@echo "  make clean          - Clean generated waveform files and logs"
@@ -66,6 +70,25 @@ post_route_sta:
 	export CORNER=SS && sta pd/scripts/run_post_route_sta.tcl > reports/post_route_sta_ss.log 2>&1
 	export CORNER=FF && sta pd/scripts/run_post_route_sta.tcl > reports/post_route_sta_ff.log 2>&1
 	@echo "Post-route STA sign-off complete across corners (TT, SS, FF)."
+
+layout:
+	@echo "--> Generating custom analog layouts in Magic..."
+	@mkdir -p analog/layout
+	python3 analog/layout/generate_dac_layout.py
+	python3 analog/layout/generate_pmos_pass_layout.py
+	@echo "Analog layouts generated: dac_5bit_array.mag, pmos_pass_2000u.mag."
+
+drc:
+	@echo "--> Running Magic Design Rule Check (DRC)..."
+	python3 analog/layout/run_drc.py
+
+lvs:
+	@echo "--> Running Netgen Layout Versus Schematic (LVS)..."
+	python3 analog/layout/run_lvs.py
+
+pex:
+	@echo "--> Running Parasitic Extraction (PEX) & comparison..."
+	python3 analog/layout/run_pex.py
 
 model:
 	@echo "--> Running closed-loop co-simulation..."

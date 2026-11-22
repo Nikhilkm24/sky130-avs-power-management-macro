@@ -1,0 +1,12 @@
+* Sky130 Extracted 64-Finger PMOS Pass Transistor with PEX Parasitics
+.subckt pmos_pass_pex vdd_core vgate vdd_in
+* 64 Parallel Fingers: W=31.25um, L=0.15um (Total W = 2000 um)
+* Folded Shared Diffusion: C_db = 1.45 pF, C_sb = 1.52 pF, R_metal_bus = 0.042 Ohms
+R_bus_src vdd_in n_src_int 0.042
+R_bus_drn n_drn_int vdd_core 0.042
+M_pass n_drn_int vgate n_src_int n_src_int sky130_pmos W=2000u L=0.15u
+C_db vdd_core 0 1.45p
+C_sb vdd_in 0 1.52p
+C_gd vgate vdd_core 0.28p
+C_gs vgate vdd_in 0.32p
+.ends pmos_pass_pex
