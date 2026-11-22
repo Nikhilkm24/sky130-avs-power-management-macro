@@ -265,7 +265,7 @@ The execution roadmap is structured into 11 rigorous, sequential milestones:
 - [x] **Step 4:** Author exhaustive reference markdown guide (`research/RESEARCH_IMPLEMENTATION_GUIDE.md`).
 - [x] **Step 5 (Phase B):** Map CPM delay stages to physical `sky130_fd_sc_hd__inv_1` gates and re-run Yosys netlist audit.
 - [x] **Step 6 (Phase C):** Expand multi-corner OpenSTA dataset from $N=6$ to $N=24$ characterization points.
-- [ ] **Step 7 (Phase D):** Implement mathematical uncertainty budgeting script `models/uncertainty_cpm.py`.
+- [x] **Step 7 (Phase D):** Implement mathematical uncertainty budgeting script `models/uncertainty_cpm.py`.
 - [ ] **Step 8 (Phase E):** Implement dual-replica accumulator carry-path monitor and workload sentinel in RTL.
 - [ ] **Step 9 (Phase F):** Integrate foundry SkyWater 130nm BSIM4 device models into analog SPICE netlists.
 - [ ] **Step 10 (Phase G):** Update AVS controller FSM with slew-settling lock timer and activity gating.

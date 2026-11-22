@@ -138,10 +138,11 @@ mixed_signal:
 	@echo "Mixed-signal integration verified: reports/mixed_signal_transient.png."
 
 model:
-	@echo "--> Running closed-loop co-simulation and CPM calibration..."
+	@echo "--> Running closed-loop co-simulation, CPM calibration, and uncertainty budgeting..."
 	@mkdir -p reports
 	python3 models/closed_loop_avs_sim.py
 	python3 models/cpm_calibration.py
+	python3 models/uncertainty_cpm.py
 
 pvt_matrix:
 	@echo "--> Checking PVT Cross-Corner Sign-off Matrix..."
