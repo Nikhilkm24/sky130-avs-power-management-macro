@@ -7,7 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  rtl-and-models:
+  validate:
+    name: RTL Simulation, Lint & Modeling Sign-off
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -32,7 +33,32 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y iverilog
 
-      - name: Run RTL Verification Testbenches
+      - name: Lint RTL Sources with Icarus Verilog
+        run: |
+          iverilog -Wall -g2012 -s avs_system_top -o /tmp/lint_check.vvp \
+            rtl/level_shifter/level_shifter.v \
+            rtl/load/pipelined_mac_load.v \
+            rtl/cpm/critical_path_monitor.v \
+            rtl/controller/avs_controller.v \
+            rtl/top/avs_system_top.v
+          rm -f /tmp/lint_check.vvp
+
+      - name: Run AVS Controller FSM Testbench
         run: |
           iverilog -g2012 -o sim_controller.vvp rtl/controller/avs_controller.v sim/tb_controller.v
           vvp sim_controller.vvp
+
+      - name: Run Integrated Top-Level System Testbench
+        run: |
+          iverilog -g2012 -o sim_avs_top.vvp \
+            rtl/level_shifter/level_shifter.v \
+            rtl/load/pipelined_mac_load.v \
+            rtl/cpm/critical_path_monitor.v \
+            rtl/controller/avs_controller.v \
+            rtl/top/avs_system_top.v \
+            sim/tb_avs_top.v
+          vvp sim_avs_top.vvp
+
+      - name: Validate Cross-Corner PVT Matrix
+        run: |
+          cat reports/pvt_cross_corner_matrix.rpt

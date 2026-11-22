@@ -8,6 +8,8 @@
 [![CI: Automated Verification](https://github.com/Nikhilkm24/sky130-avs-power-management-macro/actions/workflows/ci.yml/badge.svg)](https://github.com/Nikhilkm24/sky130-avs-power-management-macro/actions/workflows/ci.yml)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
+[**Documentation Index**](docs/index.md) | [**System Architecture**](docs/SYSTEM_ARCHITECTURE.md) | [**Specification**](docs/SPECIFICATION.md) | [**Verification Plan**](docs/verification_plan.md) | [**Build Guide**](BUILDING.md) | [**Contributing**](CONTRIBUTING.md) | [**Changelog**](CHANGELOG.md)
+
 ---
 
 ## 1. Project Overview
@@ -270,11 +272,18 @@ A rigorous assessment of this implementation reveals several engineering challen
 
 ```text
 sky130-avs-power-management-macro/
-├── .github/workflows/ci.yml         # Automated GitHub Actions verification pipeline
+├── .github/                         # GitHub automation and collaboration templates
+│   ├── workflows/ci.yml             # Automated GitHub Actions verification pipeline
+│   ├── ISSUE_TEMPLATE/              # Structured bug report & feature request templates
+│   └── PULL_REQUEST_TEMPLATE.md     # Engineering pull request verification checklist
 ├── .agents/rules/                   # Antigravity persistent engineering rules
-├── Makefile                         # Unified verification runner
+├── .editorconfig                    # Universal multi-editor whitespace and formatting rules
+├── Makefile                         # Unified verification and build runner
 ├── LICENSE                          # Proprietary educational license
 ├── AGENTS.md                        # Persistent engineering standards documentation
+├── BUILDING.md                      # Complete toolchain setup and build instructions
+├── CONTRIBUTING.md                  # Development standards and PR contribution guide
+├── CHANGELOG.md                     # User-facing and engineering release notes
 ├── README.md                        # Primary technical documentation
 ├── analog/                          # Analog subsystem netlists, layouts, and PEX
 │   ├── bgr/bgr_1v2.sp               # Transistor-level 1.20V Bandgap Reference
@@ -323,6 +332,8 @@ sky130-avs-power-management-macro/
 │   ├── mixed_signal_integration.rpt # 60us dynamic transient report
 │   └── pvt_cross_corner_matrix.rpt  # Cross-corner PVT characterization matrix
 └── docs/                            # Detailed technical specifications and manuals
+    ├── index.md                     # Master documentation index and navigation hub
+    ├── verification_plan.md         # Hardware verification coverage and sign-off plan
     ├── COMPLETE_PROJECT_DOCUMENTATION.md # Comprehensive engineering design manual
     ├── LDO_DATASHEET_SUMMARY.md     # Electrical characteristics table
     ├── SPECIFICATION.md             # Parameter specifications
@@ -343,18 +354,30 @@ sky130-avs-power-management-macro/
 
 ## 11. Build and Simulation Quick Reference
 
+For complete toolchain installation instructions (WSL2 / Linux, Icarus Verilog, Yosys, OpenSTA, Magic, Netgen, ngspice), refer to [**BUILDING.md**](BUILDING.md).
+
 The verification suite can be executed using the unified Makefile:
 
 | Target | Command | Primary Tools | Output Generated |
 | :--- | :--- | :--- | :--- |
-| **Digital Simulation** | `make sim` | Icarus Verilog | `sim_controller.vcd`, `sim_avs_top.vcd` |
-| **Analog Characterization**| `make analog` | ngspice | `bgr_line_reg.data`, `ldo_loop_gain.data` |
+| **Digital Simulation** | `make sim` | Icarus Verilog | `sim/tb_controller.vvp`, `sim/tb_avs_top.vvp` |
+| **Analog Characterization**| `make analog` | ngspice | `analog/*/*.data`, `analog/*/*.log` |
 | **Logic Synthesis** | `make synth` | Yosys | `synth/avs_system_top_netlist.v` |
-| **Static Timing** | `make sta` | OpenSTA | `reports/sta_tt.log`, `sta_ss.log`, `sta_ff.log` |
+| **Static Timing** | `make sta` | OpenSTA | `sta/sta_tt.log`, `sta_ss.log`, `sta_ff.log` |
 | **Physical Design** | `make pd` | Python scripts | `pd/results/floorplan.def`, `avs_system_top.spef` |
 | **Post-Route Timing** | `make post_route_sta` | OpenSTA | `reports/post_route_sta_tt.log` |
 | **Analog Verification** | `make drc && make lvs && make pex` | Magic 8.3, ngspice | `reports/analog_drc.rpt`, `analog_lvs.rpt` |
+| **Closed-Loop Co-Sim** | `make model` | Python 3.12 | `reports/avs_closed_loop_transient.png` |
+| **PVT Matrix Sign-off** | `make pvt_matrix` | Text report | `reports/pvt_cross_corner_matrix.rpt` |
 | **Full Pipeline** | `make validate` | All tools | Comprehensive cross-domain sign-off |
+
+### Developer Convenience Aliases
+- `make test` — Runs fast simulation testbenches and behavioral models.
+- `make lint` — Checks RTL source syntax with `iverilog -Wall`.
+- `make check` — Fast sanity check (`sim` + `model` + `pvt_matrix`).
+- `make build` — Synthesizes digital gate-level and builds physical design database (`synth` + `pd`).
+- `make report` — Displays cross-corner sign-off summary matrix.
+- `make clean` — Cleans up generated waveforms, temporary netlists, and caches.
 
 ---
 
@@ -398,8 +421,12 @@ The verification suite can be executed using the unified Makefile:
 
 ---
 
-## 14. License
+## 14. Contributing and License
 
+### Contributing
+Contributions, issue reports, and engineering discussions are welcome under the project's educational scope. Before submitting code or opening pull requests, please read our [**Contributing Guide**](CONTRIBUTING.md) and review the [**Hardware Verification Plan**](docs/verification_plan.md).
+
+### License
 Copyright © 2026 Nikhil KM (Nikhil Mahesh)  
 Sky130 Adaptive Voltage Scaling (AVS) Macro Project — All Rights Reserved  
 

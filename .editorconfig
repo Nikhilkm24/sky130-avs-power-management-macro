@@ -1,0 +1,49 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# Default rules for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Verilog and SystemVerilog HDL sources
+[*.{v,sv,vh,svh}]
+indent_style = space
+indent_size = 4
+
+# Tool Command Language (Tcl) and Synopsys Design Constraints (SDC)
+[*.{tcl,sdc}]
+indent_style = space
+indent_size = 4
+
+# Python scripts and test harnesses
+[*.{py,pyw}]
+indent_style = space
+indent_size = 4
+
+# SPICE netlists and models
+[*.{sp,cir,spice}]
+indent_style = space
+indent_size = 4
+
+# YAML and JSON configurations
+[*.{yml,yaml,json}]
+indent_style = space
+indent_size = 2
+
+# Markdown documentation (preserve intentional trailing spaces for line breaks)
+[*.md]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
+# Makefiles require tab indentation
+[Makefile]
+indent_style = tab
+indent_size = 4
