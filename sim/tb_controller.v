@@ -48,8 +48,8 @@ module tb_controller;
         .fsm_state      (fsm_state)
     );
 
-    // Clock Generation: 20 MHz (Period = 50 ns)
-    always #25 clk_ctrl = ~clk_ctrl;
+    // Clock Generation: 12.5 MHz Controller Clock (Period = 80.0 ns)
+    always #40.0 clk_ctrl = ~clk_ctrl;
 
     initial begin
         $dumpfile("sim_controller.vcd");

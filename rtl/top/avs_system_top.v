@@ -5,7 +5,7 @@
 //              - AVS Controller FSM (Domain: VDD_1V8)
 //              - Critical Path Monitor (Domain: VDD_CORE)
 //              - Pipelined MAC Load (Domain: VDD_CORE)
-//              - Level Shifters & CDC Synchronizers
+//              - Level Shifters & Coherent REQ/ACK CDC Handshake Synchronizer
 // ==============================================================================
 
 `timescale 1ns / 1ps
@@ -16,11 +16,11 @@ module avs_system_top #(
     parameter integer NUM_TAPS     = 8
 )(
     // Clock & Reset (1.8V domain)
-    input  wire                    clk_io,          // 12.5 - 25 MHz controller clock
+    input  wire                    clk_io,          // 12.5 MHz controller clock (T = 80.0 ns)
     input  wire                    rst_n,           // Asynchronous active-low reset
 
     // Core Clock (Variable-voltage domain)
-    input  wire                    clk_core,        // 50 - 100 MHz load clock
+    input  wire                    clk_core,        // 75.0 MHz load clock (T = 13.333 ns)
 
     // AVS Configuration & Control
     input  wire                    avs_enable,      // 1 = Closed loop tracking, 0 = Manual
@@ -78,6 +78,7 @@ module avs_system_top #(
     wire [MARGIN_WIDTH-1:0] cpm_margin_core;
     wire [NUM_TAPS-1:0]     cpm_thermo_core;
     wire                    cpm_hazard_core;
+    wire                    cpm_valid_core;
 
     critical_path_monitor #(.NUM_TAPS(NUM_TAPS)) u_cpm (
         .clk_core        (clk_core),
@@ -85,17 +86,20 @@ module avs_system_top #(
         .enable          (1'b1),
         .margin_code     (cpm_margin_core),
         .thermometer_raw (cpm_thermo_core),
-        .timing_hazard   (cpm_hazard_core)
+        .timing_hazard   (cpm_hazard_core),
+        .margin_valid    (cpm_valid_core)
     );
 
     // --------------------------------------------------------------------------
     // Level Shifter: Low-to-High for Signals from VDD_CORE into VDD_1V8
     // --------------------------------------------------------------------------
     wire [MARGIN_WIDTH-1:0] cpm_margin_ls;
+    wire                    cpm_valid_ls;
     wire [31:0]             mac_result_ls;
     wire                    activity_pulse_ls;
 
     level_shifter_lh #(.WIDTH(MARGIN_WIDTH)) u_ls_cpm  (.in_low(cpm_margin_core),    .out_high(cpm_margin_ls));
+    level_shifter_lh #(.WIDTH(1))            u_ls_val  (.in_low(cpm_valid_core),     .out_high(cpm_valid_ls));
     level_shifter_lh #(.WIDTH(32))           u_ls_mac  (.in_low(mac_result_core),    .out_high(mac_result_ls));
     level_shifter_lh #(.WIDTH(1))            u_ls_act  (.in_low(activity_pulse_core),.out_high(activity_pulse_ls));
 
@@ -103,17 +107,22 @@ module avs_system_top #(
     assign core_activity_pulse = activity_pulse_ls;
 
     // --------------------------------------------------------------------------
-    // Coherent Gray-Code CDC Synchronizer: Safe crossing of CPM margin into Controller Domain
+    // Coherent REQ/ACK Handshake Synchronizer: Safe crossing of CPM margin into Controller Domain
     // --------------------------------------------------------------------------
     wire [MARGIN_WIDTH-1:0] synchronized_margin;
+    wire                    margin_rx_valid;
+    wire                    cpm_cdc_busy;
 
-    cdc_gray_synchronizer #(.WIDTH(MARGIN_WIDTH)) u_cdc_margin (
+    cdc_handshake_synchronizer #(.WIDTH(MARGIN_WIDTH)) u_cdc_margin (
         .src_clk    (clk_core),
         .src_rst_n  (rst_n),
-        .bin_in     (cpm_margin_ls),
+        .src_data   (cpm_margin_ls),
+        .src_valid  (cpm_valid_ls),
+        .src_busy   (cpm_cdc_busy),
         .dest_clk   (clk_io),
         .dest_rst_n (rst_n),
-        .bin_out    (synchronized_margin)
+        .dest_data  (synchronized_margin),
+        .dest_valid (margin_rx_valid)
     );
 
     // --------------------------------------------------------------------------

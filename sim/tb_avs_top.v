@@ -53,11 +53,11 @@ module tb_avs_top;
     );
 
     // Clock Generation:
-    // clk_io = 20 MHz (Period = 50 ns)
-    always #25 clk_io = ~clk_io;
+    // clk_io = 12.5 MHz Controller Clock (Period = 80.0 ns)
+    always #40.0 clk_io = ~clk_io;
 
-    // clk_core = 80 MHz (Period = 12.5 ns)
-    always #6.25 clk_core = ~clk_core;
+    // clk_core = 75.0 MHz Core Clock (Period = 13.333 ns)
+    always #6.6665 clk_core = ~clk_core;
 
     initial begin
         $dumpfile("sim_avs_top.vcd");

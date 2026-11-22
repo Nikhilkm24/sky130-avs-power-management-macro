@@ -301,12 +301,12 @@ sky130-avs-power-management-macro/
 │   ├── controller/avs_controller.v  # Closed-loop AVS 6-state FSM controller
 │   ├── cpm/critical_path_monitor.v  # Synthesizable replica delay line & 8-tap CPM
 │   ├── load/pipelined_mac_load.v    # 16-bit pipelined MAC workload with LFSR
-│   ├── level_shifter/level_shifter.v# Dual-rail level shifters & Gray-code CDC synchronizer
+│   ├── level_shifter/level_shifter.v# Dual-rail level shifters & REQ/ACK CDC synchronizer
 │   └── top/avs_system_top.v         # Integrated digital top-level macro
 ├── sim/                             # Testbenches and mixed-signal simulation
 │   ├── tb_controller.v              # FSM controller standalone testbench
 │   ├── tb_cpm.v                     # Critical Path Monitor standalone testbench
-│   ├── tb_cdc.v                     # Coherent Gray-code CDC testbench
+│   ├── tb_cdc.v                     # Coherent REQ/ACK CDC testbench
 │   ├── tb_avs_top.v                 # Integrated digital top testbench
 │   ├── mixed_signal_top.sp          # Transistor-level mixed-signal SPICE deck
 │   ├── run_mixed_signal_co_sim.py   # Closed-loop co-simulation engine
