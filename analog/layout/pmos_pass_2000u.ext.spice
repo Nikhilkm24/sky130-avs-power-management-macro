@@ -1,0 +1,73 @@
+* NGSPICE file created from pmos_pass_2000u.ext - technology: sky130A
+
+.global w<0.42 a1<0.47 a1<11.57 a1<2.01 a1<1.01 
+
+
+* Top level circuit pmos_pass_2000u
+
+X0 a_385_0# a_370_n20# a_330_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X1 a_605_0# a_590_n20# a_550_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X2 a_2420_0# a_2405_n20# a_2365_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X3 a_1430_0# a_1415_n20# a_1375_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X4 a_2640_0# a_2625_n20# a_2585_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X5 a_1650_0# a_1635_n20# a_1595_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X6 a_1815_0# a_1800_n20# a_1760_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X7 a_2860_0# a_2845_n20# a_2805_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X8 a_1870_0# a_1855_n20# a_1815_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X9 a_3135_0# a_3120_n20# a_3080_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X10 a_2145_0# a_2130_n20# a_2090_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X11 a_3190_0# a_3175_n20# a_3135_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X12 a_3355_0# a_3340_n20# a_3300_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X13 a_1155_0# a_1140_n20# a_1100_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X14 a_2200_0# a_2185_n20# a_2145_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X15 a_2365_0# a_2350_n20# a_2310_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X16 a_3410_0# a_3395_n20# a_3355_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X17 a_330_0# a_315_n20# a_275_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X18 a_1210_0# a_1195_n20# a_1155_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X19 a_1375_0# a_1360_n20# a_1320_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X20 a_2585_0# a_2570_n20# a_2530_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X21 a_550_0# a_535_n20# a_495_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X22 a_715_0# a_700_n20# a_660_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X23 a_1595_0# a_1580_n20# a_1540_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X24 a_2805_0# a_2790_n20# a_2750_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X25 a_770_0# a_755_n20# a_715_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X26 a_935_0# a_920_n20# a_880_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X27 a_990_0# a_975_n20# a_935_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X28 a_55_0# a_40_n20# a_0_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X29 a_275_0# a_260_n20# a_220_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X30 a_110_0# a_95_n20# a_55_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X31 a_495_0# a_480_n20# a_440_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X32 a_3520_0# a_3505_n20# a_3465_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X33 a_1320_0# a_1305_n20# a_1265_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X34 a_2530_0# a_2515_n20# a_2475_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X35 a_1540_0# a_1525_n20# a_1485_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X36 a_2750_0# a_2735_n20# a_2695_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X37 a_2915_0# a_2900_n20# a_2860_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X38 a_1760_0# a_1745_n20# a_1705_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X39 a_1925_0# a_1910_n20# a_1870_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X40 a_2970_0# a_2955_n20# a_2915_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X41 a_1980_0# a_1965_n20# a_1925_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X42 a_3025_0# a_3010_n20# a_2970_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X43 a_2035_0# a_2020_n20# a_1980_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X44 a_3245_0# a_3230_n20# a_3190_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X45 a_1045_0# a_1030_n20# a_990_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X46 a_2255_0# a_2240_n20# a_2200_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X47 a_3080_0# a_3065_n20# a_3025_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X48 a_2090_0# a_2075_n20# a_2035_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X49 a_3300_0# a_3285_n20# a_3245_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X50 a_3465_0# a_3450_n20# a_3410_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X51 a_220_0# a_205_n20# a_165_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=1.25e+13p ps=6.33e+07u w=3.125e+07u l=150000u
+X52 a_1100_0# a_1085_n20# a_1045_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X53 a_1265_0# a_1250_n20# a_1210_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X54 a_2310_0# a_2295_n20# a_2255_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X55 a_2475_0# a_2460_n20# a_2420_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X56 a_440_0# a_425_n20# a_385_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X57 a_1485_0# a_1470_n20# a_1430_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X58 a_2695_0# a_2680_n20# a_2640_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X59 a_660_0# a_645_n20# a_605_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X60 a_825_0# a_810_n20# a_770_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=1.25e+13p pd=6.33e+07u as=0p ps=0u w=3.125e+07u l=150000u
+X61 a_1705_0# a_1690_n20# a_1650_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X62 a_880_0# a_865_n20# a_825_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+X63 a_165_0# a_150_n20# a_110_0# w_n400_n400# sky130_fd_pr__pfet_01v8 ad=0p pd=0u as=0p ps=0u w=3.125e+07u l=150000u
+.end
+

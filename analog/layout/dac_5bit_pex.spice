@@ -98,7 +98,6 @@ R31 tap_31 tap_32 500.0
 R_int_31 tap_31 tap_31_int 2.4
 C_sub_31 tap_31 agnd 15.0f
 R_top vref tap_32 1.8
-R_bot tap_0 vss 2500.0
-B_mux vout vss V = 0.72 + (v(vref) - 0.72) * ((v(d4)*16 + v(d3)*8 + v(d2)*4 + v(d1)*2 + v(d0)) / 31.0)
+R_bot tap_0 vss 23.25k
 C_out vout agnd 45.0f
 .ends dac_5bit_pex

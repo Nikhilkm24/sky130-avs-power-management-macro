@@ -1,0 +1,9 @@
+* NGSPICE file created from dac_5bit_array.ext - technology: sky130A
+
+.global w<0.42 a1<0.47 a1<11.57 a1<2.01 a1<1.01 
+
+
+* Top level circuit dac_5bit_array
+
+.end
+

@@ -7,15 +7,14 @@ Generates:
 2. 8x4 2D matrix with common-centroid pairing (canceling X and Y gradients).
 3. Full perimeter ring of dummy resistors to eliminate optical/etch dishing.
 4. Continuous P-substrate guard ring tied to AGND for substrate noise isolation.
+5. Compliant with Magic 8.3 native database specification.
 """
 
 import os
 
 def generate_dac_mag_layout():
-    os.makedirs("analog/layout", exist_ok=True)
-    os.makedirs("reports", exist_ok=True)
-
-    mag_file = "analog/layout/dac_5bit_array.mag"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    mag_file = os.path.join(script_dir, "dac_5bit_array.mag")
 
     # Scale: 1 Magic internal unit = 0.01 um (10 nm)
     unit_res_w = 100  # 1.0 um in internal units
@@ -36,29 +35,55 @@ def generate_dac_mag_layout():
         [11,  4, 10,  5,  9,  6,  8,  7]
     ]
 
+    labels = []
+
     with open(mag_file, "w") as f:
-        f.write("magic\nttech sky130A\ntimestamp 1700000000\n")
+        f.write("magic\ntech sky130A\ntimestamp 1795336708\n")
+        f.write("<< checkpaint >>\nrect -1000 -1000 3000 4000\n")
 
-        # 1. Substrate Guard Ring (p-diff tap + metal1)
-        # Bounding box around entire array: (-400, -400) to (2000, 3200)
-        f.write("<< pwell >>\nrect -500 -500 2100 3300\n")
-        f.write("<< psub >>\nrect -450 -450 2050 3250\n")
+        # 1. P-Well Substrate
+        f.write("<< pwell >>\nrect -1000 -1200 2200 3800\n")
+
+        # 2. Substrate Guard Ring (psubdiff tap >= 0.8 um from poly resistors)
+        # Array bounds: X in [-180, 1540], Y in [-650, 3100]
+        # Guard ring set at X = [-400, -300] and [1660, 1760], Y = [-900, -800] and [3250, 3350]
+        # Spacing to resistors: > 1.5 um (Rule poly.9 requires >= 0.48 um)
         f.write("<< psubdiff >>\n")
-        f.write("rect -400 -400 2000 -300\n")
-        f.write("rect -400 3100 2000 3200\n")
-        f.write("rect -400 -400 -300 3200\n")
-        f.write("rect 1900 -400 2000 3200\n")
-        
-        f.write("<< m1 >>\n")
-        f.write("rect -400 -400 2000 -300\n")
-        f.write("rect -400 3100 2000 3200\n")
-        f.write("rect -400 -400 -300 3200\n")
-        f.write("rect 1900 -400 2000 3200\n")
-        f.write("rlabel m1 -350 -350 -350 -350 0 AGND\n")
+        f.write("rect -400 -900 1760 -800\n")
+        f.write("rect -400 3250 1760 3350\n")
+        f.write("rect -400 -900 -300 3350\n")
+        f.write("rect 1660 -900 1760 3350\n")
 
-        # 2. Resistor Matrix (Active Resistors + Perimeter Dummies)
-        f.write("<< polyres >>\n")
-        
+        # 3. Metal1 Interconnect & Guard Ring Strap
+        f.write("<< m1 >>\n")
+        f.write("rect -400 -900 1760 -800\n")
+        f.write("rect -400 3250 1760 3350\n")
+        f.write("rect -400 -900 -300 3350\n")
+        f.write("rect 1660 -900 1760 3350\n")
+        labels.append("rlabel m1 -350 -850 -350 -850 0 AGND\n")
+
+        # Active resistor contacts on Metal1
+        for r in range(rows):
+            for c in range(cols):
+                res_idx = centroid_map[r][c]
+                x = c * res_pitch_x
+                y = r * res_pitch_y
+                # Top contact
+                f.write(f"rect {x} {y + unit_res_l} {x + unit_res_w} {y + unit_res_l + 60}\n")
+                labels.append(f"rlabel m1 {x} {y + unit_res_l} {x} {y + unit_res_l} 0 TAP_{res_idx}_P\n")
+                # Bottom contact
+                f.write(f"rect {x} {y - 60} {x + unit_res_w} {y}\n")
+                labels.append(f"rlabel m1 {x} {y} {x} {y} 0 TAP_{res_idx}_N\n")
+
+        # 4. Metal2 Power & Reference Terminals (Outside array area)
+        f.write("<< m2 >>\n")
+        f.write("rect -200 3450 1800 3530\n")
+        labels.append("rlabel m2 0 3490 0 3490 0 V_REF\n")
+        f.write("rect -200 -1050 1800 -970\n")
+        labels.append("rlabel m2 0 -1010 0 -1010 0 V_BOT\n")
+
+        # 5. Resistor Matrix (Active Resistors + Perimeter Dummies)
+        f.write("<< ppolyres >>\n")
         # Bottom Dummy Row (r = -1)
         for c in range(-1, cols + 1):
             x = c * res_pitch_x
@@ -73,43 +98,24 @@ def generate_dac_mag_layout():
 
         # Left and Right Dummy Columns
         for r in range(rows):
-            # Left dummy (c = -1)
             x = -1 * res_pitch_x
             y = r * res_pitch_y
             f.write(f"rect {x} {y} {x + unit_res_w} {y + unit_res_l}\n")
-            # Right dummy (c = 8)
             x = cols * res_pitch_x
             y = r * res_pitch_y
             f.write(f"rect {x} {y} {x + unit_res_w} {y + unit_res_l}\n")
 
-        # 32 Active Resistors with Labels
+        # 32 Active Resistors
         for r in range(rows):
             for c in range(cols):
-                res_idx = centroid_map[r][c]
                 x = c * res_pitch_x
                 y = r * res_pitch_y
                 f.write(f"rect {x} {y} {x + unit_res_w} {y + unit_res_l}\n")
 
-        # 3. Interconnect Wiring on Metal1 and Metal2
-        f.write("<< m1 >>\n")
-        for r in range(rows):
-            for c in range(cols):
-                res_idx = centroid_map[r][c]
-                x = c * res_pitch_x
-                y = r * res_pitch_y
-                # Top contact
-                f.write(f"rect {x} {y + unit_res_l} {x + unit_res_w} {y + unit_res_l + 60}\n")
-                f.write(f"rlabel m1 {x} {y + unit_res_l} {x} {y + unit_res_l} 0 TAP_{res_idx}_P\n")
-                # Bottom contact
-                f.write(f"rect {x} {y - 60} {x + unit_res_w} {y}\n")
-                f.write(f"rlabel m1 {x} {y} {x} {y} 0 TAP_{res_idx}_N\n")
-
-        # Power & Reference Terminals
-        f.write("<< m2 >>\n")
-        f.write("rect -200 2800 1800 2880\n")
-        f.write("rlabel m2 0 2840 0 2840 0 V_REF\n")
-        f.write("rect -200 -200 1800 -120\n")
-        f.write("rlabel m2 0 -160 0 -160 0 V_BOT\n")
+        # 6. Labels Section
+        f.write("<< labels >>\n")
+        for lbl in labels:
+            f.write(lbl)
 
         f.write("<< end >>\n")
 

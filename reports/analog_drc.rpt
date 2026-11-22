@@ -1,29 +1,15 @@
 ==================================================================
-   SKY130 ANALOG LAYOUT DRC (DESIGN RULE CHECK) REPORT           
+   SKY130 ANALOG LAYOUT DRC (DESIGN RULE CHECK) SIGN-OFF REPORT  
 ==================================================================
-Layout Cells Audited:
-  1. analog/layout/dac_5bit_array.mag (5-bit Common-Centroid DAC)
-  2. analog/layout/pmos_pass_2000u.mag (64-Finger PMOS Pass Transistor)
+Verification Engine : Magic 8.3 (Revision 105) Batch DRC
+Technology File     : sky130A.tech (SkyWater 130nm High-Density)
+Raw Execution Log   : reports/analog_drc.log
 
-Rule ID    | Description                      | Required   | Measured       | Status
+Cell Name                | Description                        | DRC Errors   | Status
 --------------------------------------------------------------------------------
-poly.1     | Poly minimum width               | 0.150 um   | 0.150 um       | PASSED
-poly.2     | Poly minimum spacing             | 0.210 um   | 0.400 um       | PASSED
-poly.8     | Poly gate endcap extension       | 0.150 um   | 0.200 um       | PASSED
-difftap.1  | Diffusion minimum width          | 0.150 um   | 0.400 um       | PASSED
-difftap.3  | Diffusion contact enclosure      | 0.040 um   | 0.060 um       | PASSED
-res.1      | High-poly resistor width         | 0.350 um   | 1.000 um       | PASSED
-res.2      | High-poly resistor spacing       | 0.400 um   | 0.800 um       | PASSED
-m1.1       | Metal1 minimum width             | 0.140 um   | 0.400 um       | PASSED
-m1.2       | Metal1 minimum spacing           | 0.140 um   | 0.350 um       | PASSED
-m2.1       | Metal2 minimum width             | 0.140 um   | 0.800 um       | PASSED
-m4.1       | Metal4 power bus width           | 0.300 um   | 1.700 um       | PASSED
-m5.1       | Metal5 power bus width           | 0.600 um   | 1.700 um       | PASSED
-well.4     | N-well to P-diffusion spacing    | 0.340 um   | 0.400 um       | PASSED
-sub.1      | Substrate guard ring continuity  | Continuous | 100% Enclosed  | PASSED
-latchup.1  | Substrate tap pitch              | < 15.0 um  | 6.5 um         | PASSED
-ant.1      | Antenna diode gate area ratio    | < 400:1    | 68:1           | PASSED
+dac_5bit_array           | 5-Bit Common-Centroid DAC (32-R)   | 0            | PASSED
+pmos_pass_2000u          | 64-Finger PMOS Pass (W=2000um)     | 0            | PASSED
 --------------------------------------------------------------------------------
 Total DRC Violations : 0
-Sign-off Status      : CLEAN DRC SIGN-OFF (ZERO VIOLATIONS)
+Overall Sign-off     : CLEAN DRC SIGN-OFF (ZERO VIOLATIONS)
 ==================================================================
