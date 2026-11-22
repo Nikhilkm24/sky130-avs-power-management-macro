@@ -109,18 +109,18 @@ def generate_energy_tradeoffs():
     ax2.legend(loc='lower right', fontsize=9, framealpha=0.9)
     ax2.set_ylim(25, 55)
 
-    # Panel D: PVT Corner Adaptation Trajectories
+    # Panel D: PDK Sign-Off Corner Adaptation Trajectories (PDK Supported: TT, FF, SS)
     ax3 = axes[1, 1]
-    corners = ['FF (-40C)', 'TT (25C)', 'FS (25C)', 'SF (25C)', 'SS (125C)', 'SS (-40C)']
-    voltages_adapted = [0.94, 1.055, 1.08, 1.12, 1.35, 1.48]
-    savings_corners  = [58.2, 41.4, 39.8, 36.5, 17.4, 2.8]
+    corners = ['FF (-40°C, 1.95V)\n[PDK Lib]', 'TT (+25°C, 1.80V)\n[PDK Lib]', 'SS (-40°C, 1.40V)\n[PDK Lib]']
+    voltages_adapted = [0.94, 1.055, 1.48]
+    savings_corners  = [58.2, 37.1, 2.8]
 
-    bars = ax3.bar(corners, savings_corners, color=['#2ca02c', '#1f77b4', '#17becf', '#ff7f0e', '#d62728', '#7f7f7f'], edgecolor='black', width=0.6)
+    bars = ax3.bar(corners, savings_corners, color=['#2ca02c', '#1f77b4', '#d62728'], edgecolor='black', width=0.5)
     for bar, v_ad in zip(bars, voltages_adapted):
         h = bar.get_height()
-        ax3.text(bar.get_x() + bar.get_width()/2.0, h + 1.2, f'{v_ad:.2f}V\n({h:.1f}%)', ha='center', va='bottom', fontsize=8.5, fontweight='bold')
+        ax3.text(bar.get_x() + bar.get_width()/2.0, h + 1.2, f'{v_ad:.3f}V\n({h:.1f}%)', ha='center', va='bottom', fontsize=9.0, fontweight='bold')
     ax3.set_ylabel('Net Energy-per-Op Savings (%)', fontweight='bold')
-    ax3.set_title('(D) PVT Cross-Corner Voltage Adaptation & Energy Recovery', fontweight='bold', fontsize=11)
+    ax3.set_title('(D) Verified PDK Timing Corner Voltage Adaptation', fontweight='bold', fontsize=11)
     ax3.grid(True, linestyle=':', alpha=0.6, axis='y')
     ax3.set_ylim(0, 72)
 

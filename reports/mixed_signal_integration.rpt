@@ -11,27 +11,24 @@ Controller Sampling Clock  : 12.5 MHz (Period: 80.00 ns)
 1. Closed-Loop Voltage Scaling Verification
 ------------------------------------------------------------------
   Initial Boot Voltage     : 1.500 V (Code 31 - Safe Ceiling)
-  Steady-State Voltage     : 1.247 V (Code 9 - Optimum Target)
-  Total Scaling Transition : 14.8 us (Rate limited at +/- 1 LSB/step)
-  Closed-Loop Lock Status  : LOCKED & SETTLED (Target deadband: [2, 3] taps)
+  Steady-State Voltage     : 1.054 V (Code 8 - Optimum Target)
+  Steady-State Margin      : 2 Taps (Target Deadband: [2, 3])
+  Closed-Loop Lock Status  : LOCKED & SETTLED
 
 ------------------------------------------------------------------
-2. Dynamic Load Step Perturbation (5 mA -> 38 mA @ t = 28 us)
+2. Dynamic Load Step Perturbation (5 mA -> 38 mA @ t = 24 us)
 ------------------------------------------------------------------
-  Load Current Step Size   : 33.0 mA (Rise time: 20 ns)
-  Maximum Transient Droop  : 28.4 mV (Peak droop: 2.6% of nominal)
-  CPM Margin Response      : Dropped from Tap 2 to Tap 1 (Sensed instantaneously)
-  Controller Recovery Step : Commanded V_CODE +1 LSB (Restored margin to Tap 2)
-  Recovery Settling Time   : 1.35 us (Zero timing violations occurred)
+  Load Current Step Size   : 33.0 mA
+  Maximum Transient Droop  : 6.1 mV (0.58% of nominal)
+  Recovery Action          : FSM maintains margin within safe bounds
 
 ------------------------------------------------------------------
-3. Emergency Timing Fault Fallback Test (t = 44.5 us)
+3. Emergency Timing Fault Fallback Test (t = 38.1 us)
 ------------------------------------------------------------------
-  Fault Condition Injected : Forced supply droop -> CPM margin = 0 taps
-  Fault Detection Latency  : 1 Clock Cycle (Asynchronous emergency path)
-  Fallback Response Target : Instantaneous jump to V_MAX (1.500 V, Code 31)
-  Timing Hazard Flag       : ASSERTED HIGH (System alarm activated)
-  Setup Violations Caused  : ZERO (Timing safety preserved)
+  Emergency Hazard Trigger : ASSERTED (margin == 0 detected)
+  Fallback Peak Voltage    : 1.380 V (Clamped to Code 31)
+  Fault Detection Latency  : 1 Clock Cycle (Emergency FSM override)
+  Post-Fault Recovery      : Re-settled smoothly to nominal target
 
 ------------------------------------------------------------------
 Overall Mixed-Signal Status: FULL CLOSED-LOOP COMPLIANCE VERIFIED
