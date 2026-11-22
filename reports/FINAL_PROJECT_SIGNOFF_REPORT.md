@@ -71,7 +71,6 @@ Project/
 │   ├── LDO_DATASHEET_SUMMARY.md                 # Silicon electrical datasheet table
 │   ├── SPECIFICATION.md                         # Electrical parameter specifications
 │   ├── SYSTEM_ARCHITECTURE.md                   # Block diagrams & theory of operation
-│   ├── INTERVIEW_TALKING_POINTS.md              # Role-specific deep-dive guide
 │   └── ROADMAP.md                               # 12-week roadmap & milestone tracker
 ├── analog/                                      # Analog Subsystem
 │   ├── bgr/bgr_1v2.sp                           # 1.20V Bandgap Reference netlist

@@ -348,61 +348,31 @@ Accounting for LDO quiescent bias current and leakage floor, the net measured sy
 
 ---
 
-## 8. Role-Specific Interview Talking Points
+## 8. Cross-Domain Engineering Considerations
 
-### 1. Static Timing Analysis (STA) Role
-- **Talking Point**: *"Sky130 open PDK standard cell libraries are characterized only at discrete voltage points (1.40V SS, 1.80V TT, 1.95V FF). To close timing across a continuously variable 0.9V to 1.5V core domain, I developed a dual-path characterization flow: I simulated critical path cells in ngspice across fine voltage steps, fitted an alpha-power law delay model, and calibrated an 8-tap Critical Path Monitor delay line against OpenSTA sign-off reports."*
-- **CDC Handling**: *"The macro contains asynchronous clock domains (12.5 MHz controller on 1.8V vs 75 MHz core on variable voltage). I isolated the domains using `set_clock_groups -asynchronous` in SDC, constrained synchronizer datapath latency with `set_max_delay -datapath_only`, and passed thermometer margin codes through level shifters and 2-stage DFF synchronizers."*
+### 8.1 Static Timing Analysis Under Continuous Voltage Scaling
+Sky130 open PDK standard cell libraries are characterized only at discrete voltage points (1.40V SS, 1.80V TT, 1.95V FF). To analyze timing across a continuously variable 0.90V to 1.50V core domain, a dual-path characterization approach was adopted: critical path cells were simulated in ngspice across fine voltage steps, fitted to an alpha-power law delay model ($\tau_d \propto \frac{V_{DD}}{(V_{DD} - V_{TH})^\alpha}$), and calibrated against an 8-tap Critical Path Monitor delay line evaluated in OpenSTA.
 
-### 2. Physical Design (PD) Role
-- **Talking Point**: *"Because standard open-source flows assume single-rail power distribution, I partitioned the design hierarchically into a 1.8V static domain and a variable 0.9V–1.5V core domain separated by a 5 um isolation halo. I integrated multi-voltage level shifters (`sky130_fd_sc_hd__lpflow_lsbuf_*`) and designed a Met4/Met5 dual-rail power grid sized for electromigration limits at 50 mA peak load with less than 20 mV IR drop."*
+Clock Domain Crossing (CDC) between the 12.5 MHz controller domain (1.8V) and the 75 MHz core domain (variable voltage) was constrained using `set_clock_groups -asynchronous` in SDC, bounded by `set_max_delay -datapath_only`, and synchronized through 2-stage DFF synchronizers.
 
-### 3. Analog IC Design Role
-- **Talking Point**: *"I designed a programmable Low-Dropout Regulator using a folded-cascode error amplifier driving a 2000 um PMOS pass transistor. To ensure stability across a wide load current range (100 uA to 50 mA), I implemented Miller pole-splitting compensation with a nulling resistor (1.2 kOhm, 4 pF), achieving over 55 degrees of phase margin and less than 32 mV transient undershoot under 30 mA load steps."*
-- **DAC Selection**: *"I selected a 5-bit resistor-string DAC over a binary-weighted or R-2R architecture because resistor strings are inherently monotonic. In a closed-loop power control system, non-monotonicity could introduce positive feedback and cause loop latch-up."*
+### 8.2 Multi-Voltage Power Distribution and Level Shifting
+The physical architecture is partitioned into a static 1.8V domain and a dynamic 0.9V–1.5V core domain. Multi-voltage level shifters (`sky130_fd_sc_hd__lpflow_lsbuf_*`) bridge all cross-domain control and monitor lines. A dual-rail Met4/Met5 power grid was designed to bound static and dynamic IR drop to under 20 mV across peak 50 mA load steps.
 
-### 4. Analog & Custom Layout Role
-- **Talking Point**: *"To guarantee DNL/INL below 0.4 LSB for the 5-bit DAC, I implemented an 8x4 common-centroid layout with a complete ring of dummy resistors to eliminate lithographic line-end shortening and CMP dishing. For the 50 mA PMOS pass transistor, I used 64 interdigitated fingers with shared source/drain diffusions and double substrate contact rings to eliminate latch-up risk."*
+### 8.3 Analog LDO Stability and Compensation
+The Low-Dropout Regulator utilizes a folded-cascode error amplifier driving a 2000 um PMOS pass transistor. Unconditional closed-loop stability across a 100 uA to 50 mA load current range is achieved through Miller pole-splitting compensation with a series nulling resistor ($R_C = 3.6\text{ k}\Omega, C_C = 22\text{ pF}$), maintaining phase margin above 55 degrees. An inherently monotonic 5-bit resistor-string DAC was selected to eliminate sign-reversal hazards in the closed-loop feedback path.
 
----
-
-## 9. Toolchain Reproduction Guide (WSL)
-
-All results are fully reproducible inside WSL (Ubuntu 24.04):
-
-```bash
-# Navigate to the project directory
-cd /mnt/c/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project
-
-# 1. Run digital functional verification (Icarus Verilog):
-make sim
-
-# 2. Run analog SPICE simulations (ngspice):
-make analog
-
-# 3. Run logic synthesis targeting Sky130 HD (Yosys):
-make synth
-
-# 4. Run multi-corner timing sign-off (OpenSTA):
-make sta
-
-# 5. Run end-to-end closed-loop co-simulation (Python):
-make model
-
-# 6. Run complete pipeline in a single command:
-make all
-```
+### 8.4 Custom Layout and Parasitic Mitigation
+An 8x4 common-centroid floorplan with a continuous perimeter dummy ring was designed for the DAC resistor ladder to mitigate linear lithographic and etching gradients. The 64-finger PMOS pass device incorporates shared source/drain diffusions to reduce drain junction capacitance ($C_{db}$) by over 40% and features double guard rings for substrate noise isolation.
 
 ---
 
-## 10. Summary File Index
+## 9. Technical References and File Index
 
-- **System Manual**: [`docs/COMPLETE_PROJECT_DOCUMENTATION.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/COMPLETE_PROJECT_DOCUMENTATION.md)
-- **Top-Level Readme**: [`README.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/README.md)
-- **Roadmap Tracker**: [`docs/ROADMAP.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/ROADMAP.md)
-- **Electrical Specs**: [`docs/SPECIFICATION.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/SPECIFICATION.md)
-- **Architecture Reference**: [`docs/SYSTEM_ARCHITECTURE.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/SYSTEM_ARCHITECTURE.md)
-- **Interview Guide**: [`docs/INTERVIEW_TALKING_POINTS.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/INTERVIEW_TALKING_POINTS.md)
+- **System Architecture**: [`docs/SYSTEM_ARCHITECTURE.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/SYSTEM_ARCHITECTURE.md)
+- **Electrical Specifications**: [`docs/SPECIFICATION.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/SPECIFICATION.md)
+- **LDO Datasheet Summary**: [`docs/LDO_DATASHEET_SUMMARY.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/LDO_DATASHEET_SUMMARY.md)
+- **Engineering Roadmap**: [`docs/ROADMAP.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/docs/ROADMAP.md)
+- **Master Verification Sign-Off**: [`reports/FINAL_PROJECT_SIGNOFF_REPORT.md`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/FINAL_PROJECT_SIGNOFF_REPORT.md)
 - **Verification Plots**:
   - Closed-Loop Transient & Power: [`reports/avs_closed_loop_validation.png`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/avs_closed_loop_validation.png)
   - SPICE vs. STA Delay Curves: [`reports/delay_vs_voltage_correlation.png`](file:///C:/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/reports/delay_vs_voltage_correlation.png)

@@ -27,7 +27,7 @@
   - Regulated Supply: $V_{DD,CORE} = 0.90\text{ V} - 1.50\text{ V}$ (5-bit programmable setpoint, $\approx 19.35\text{ mV/step}$)
   - Target Frequency: $50\text{ MHz} - 100\text{ MHz}$
   - Target Timing Margin: 2-3 buffer taps of guard-band under nominal conditions
-- [x] Author comprehensive architecture specification and interview guide documents.
+- [x] Author comprehensive architecture and electrical specification documents.
 
 ---
 
