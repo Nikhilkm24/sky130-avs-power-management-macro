@@ -1,10 +1,14 @@
 // ==============================================================================
 // Module: critical_path_monitor.v
 // Project: Closed-Loop AVS Power Management Macro on Sky130
-// Description: Replica Critical Path Monitor (CPM).
-//              Mirrors the critical path delay of the 16-bit MAC datapath.
-//              Contains a tapped delay line with sampling flip-flops to produce
-//              a real-time thermometer margin code indicating timing slack.
+// Description: Synthesizable Replica Critical Path Monitor (CPM).
+//              Features:
+//              1. Synthesizable 16-stage replica delay chain with explicit
+//                 keep attributes on nets to survive logic optimization.
+//              2. 8-tap tapped delay line with sampling flip-flops.
+//              3. Monotonic priority thermometer decoder guaranteeing
+//                 monotonic slack measurements.
+//              4. Real-time timing hazard detection flag.
 // ==============================================================================
 
 `timescale 1ns / 1ps
@@ -12,12 +16,12 @@
 module critical_path_monitor #(
     parameter integer NUM_TAPS = 8
 )(
-    input  wire                 clk_core,      // Core clock (50 - 100 MHz)
-    input  wire                 rst_n,         // Active-low asynchronous reset
-    input  wire                 enable,        // Monitor enable
-    output reg  [3:0]           margin_code,   // Encoded slack margin (0 to NUM_TAPS)
-    output wire [NUM_TAPS-1:0]  thermometer_raw,// Raw sampled taps
-    output reg                  timing_hazard  // Asserted if margin drops to 0 (timing hazard)
+    input  wire                 clk_core,        // Core clock (75 - 80 MHz)
+    input  wire                 rst_n,           // Active-low asynchronous reset
+    input  wire                 enable,          // Monitor enable
+    output reg  [3:0]           margin_code,     // Encoded slack margin (0 to NUM_TAPS)
+    output wire [NUM_TAPS-1:0]  thermometer_raw, // Raw sampled taps
+    output reg                  timing_hazard    // Asserted if margin drops to 0 (timing hazard)
 );
 
     // Launch flip-flop generates alternating edge transition
@@ -31,42 +35,46 @@ module critical_path_monitor #(
     end
 
     // --------------------------------------------------------------------------
-    // Replica Critical-Path Delay Segment
-    // Synthesized chain matching the logic topology of a 16-bit multiplier path:
-    // XOR gate -> AND/OR tree -> 4-bit ripple full adders
+    // Synthesizable Replica Delay Chain (16 Inversion Stages)
+    // Structured logic path modeling inverter/NAND/NOR gates of the MAC datapath.
+    // Explicit keep attributes on wires prevent Yosys optimization and removal.
     // --------------------------------------------------------------------------
-    wire replica_start;
-    assign replica_start = launch_flop;
+    wire replica_start = launch_flop;
+    (* keep = "true" *) wire [15:0] rep_net;
 
-    wire [7:0] chain_net;
-    // Series of delay elements simulating combinational path gates
-    assign #(0.6) chain_net[0] = ~replica_start;
-    assign #(0.6) chain_net[1] = ~chain_net[0];
-    assign #(0.6) chain_net[2] = ~chain_net[1];
-    assign #(0.6) chain_net[3] = ~chain_net[2];
-    assign #(0.6) chain_net[4] = ~chain_net[3];
-    assign #(0.6) chain_net[5] = ~chain_net[4];
-    assign #(0.6) chain_net[6] = ~chain_net[5];
-    assign #(0.6) chain_net[7] = ~chain_net[6];
+    assign rep_net[0]  = ~replica_start;
+    assign rep_net[1]  = ~rep_net[0];
+    assign rep_net[2]  = ~rep_net[1];
+    assign rep_net[3]  = ~rep_net[2];
+    assign rep_net[4]  = ~rep_net[3];
+    assign rep_net[5]  = ~rep_net[4];
+    assign rep_net[6]  = ~rep_net[5];
+    assign rep_net[7]  = ~rep_net[6];
+    assign rep_net[8]  = ~rep_net[7];
+    assign rep_net[9]  = ~rep_net[8];
+    assign rep_net[10] = ~rep_net[9];
+    assign rep_net[11] = ~rep_net[10];
+    assign rep_net[12] = ~rep_net[11];
+    assign rep_net[13] = ~rep_net[12];
+    assign rep_net[14] = ~rep_net[13];
+    assign rep_net[15] = ~rep_net[14];
 
-    wire replica_path_out;
-    assign replica_path_out = chain_net[7];
+    wire replica_path_out = rep_net[15];
 
     // --------------------------------------------------------------------------
-    // Tapped Delay Line: 8 successive delay buffers extending past nominal path
-    // Each tap represents approximately 150 ps of delay guard-band
+    // Tapped Delay Line: 8 successive delay buffers extending past replica path
     // --------------------------------------------------------------------------
-    wire [NUM_TAPS-1:0] tap_wire;
-    assign #(0.15) tap_wire[0] = replica_path_out;
+    (* keep = "true" *) wire [NUM_TAPS-1:0] tap_wire;
+    assign tap_wire[0] = replica_path_out;
     genvar i;
     generate
         for (i = 1; i < NUM_TAPS; i = i + 1) begin : gen_delay_taps
-            assign #(0.15) tap_wire[i] = tap_wire[i-1];
+            assign tap_wire[i] = tap_wire[i-1];
         end
     endgenerate
 
     // --------------------------------------------------------------------------
-    // Sampling Flip-Flops: Capture the wavefront on the rising clock edge
+    // Sampling Flip-Flops: Capture wavefront on rising clock edge
     // --------------------------------------------------------------------------
     reg [NUM_TAPS-1:0] sample_flops;
     always @(posedge clk_core or negedge rst_n) begin
@@ -88,19 +96,22 @@ module critical_path_monitor #(
     assign thermometer_raw = tap_match;
 
     // --------------------------------------------------------------------------
-    // Thermometer-to-Binary Priority Encoder:
-    // Counts consecutive matched taps to report timing margin.
+    // Monotonic Priority Thermometer Decoder:
+    // Decodes contiguous transition pattern from tap 0 upwards.
     // --------------------------------------------------------------------------
-    integer k;
-    reg [3:0] margin_count;
-
+    reg [3:0] margin_decoded;
     always @(*) begin
-        margin_count = 4'd0;
-        for (k = 0; k < NUM_TAPS; k = k + 1) begin
-            if (tap_match[k]) begin
-                margin_count = margin_count + 4'd1;
-            end
-        end
+        casez (tap_match)
+            8'b1111_1111: margin_decoded = 4'd8;
+            8'b?111_1111: margin_decoded = 4'd7;
+            8'b??11_1111: margin_decoded = 4'd6;
+            8'b???1_1111: margin_decoded = 4'd5;
+            8'b????_1111: margin_decoded = 4'd4;
+            8'b????_?111: margin_decoded = 4'd3;
+            8'b????_??11: margin_decoded = 4'd2;
+            8'b????_???1: margin_decoded = 4'd1;
+            default:      margin_decoded = 4'd0;
+        endcase
     end
 
     always @(posedge clk_core or negedge rst_n) begin
@@ -108,9 +119,8 @@ module critical_path_monitor #(
             margin_code   <= 4'd0;
             timing_hazard <= 1'b0;
         end else begin
-            margin_code   <= margin_count;
-            // Timing hazard asserted if margin count is 0 (delay exceeded clock period)
-            timing_hazard <= (margin_count == 4'd0);
+            margin_code   <= margin_decoded;
+            timing_hazard <= (margin_decoded == 4'd0);
         end
     end
 

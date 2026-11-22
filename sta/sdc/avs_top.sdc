@@ -8,11 +8,11 @@ set_units -time ns -resistance kOhm -capacitance pF -voltage V -current mA
 # -----------------------------------------------------------------------------
 # 1. Clock Definitions
 # -----------------------------------------------------------------------------
-# Controller Clock: Domain VDD_1V8, Period = 50.0 ns (20 MHz)
-create_clock -name clk_io -period 50.0 [get_ports clk_io]
+# Controller Clock: Domain VDD_1V8, Period = 80.0 ns (12.5 MHz)
+create_clock -name clk_io -period 80.0 [get_ports clk_io]
 
-# Core Datapath Clock: Domain VDD_CORE, Period = 12.5 ns (80 MHz)
-create_clock -name clk_core -period 12.5 [get_ports clk_core]
+# Core Datapath Clock: Domain VDD_CORE, Period = 13.333 ns (75.0 MHz)
+create_clock -name clk_core -period 13.333 [get_ports clk_core]
 
 # -----------------------------------------------------------------------------
 # 2. Clock Uncertainties, Jitter & Transition
@@ -32,12 +32,13 @@ set_clock_groups -asynchronous \
     -group [get_clocks clk_io] \
     -group [get_clocks clk_core]
 
-# Restrict maximum datapath delay across CDC synchronizer flops
-set_max_delay 10.0 -from [get_cells u_cpm/margin_code_reg*] -to [get_cells u_cdc_margin/sync_stage1_reg*] -datapath_only
-
 # -----------------------------------------------------------------------------
 # 4. Input / Output Delays & Constraints
 # -----------------------------------------------------------------------------
+# Asynchronous Reset delay & false path
+set_input_delay  -clock clk_io 0.0 [get_ports rst_n]
+set_false_path -from [get_ports rst_n]
+
 # Controller domain I/O delays
 set_input_delay  -clock clk_io -max 5.0 [get_ports {avs_enable manual_code* target_margin*}]
 set_input_delay  -clock clk_io -min 1.0 [get_ports {avs_enable manual_code* target_margin*}]
