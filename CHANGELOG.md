@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-## [1.1.0] - 2026-11-22
+## [1.2.0] - 2026-11-22
 
 ### Added
 - **Repository Architecture Alignment**: Implemented top-10 open-source engineering standards based on the *GitHub Repository Engineering Handbook* (Prometheus, Docker Compose, Terraform, Kubernetes).
@@ -27,18 +27,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - `.github/PULL_REQUEST_TEMPLATE.md`: Comprehensive PR checklist and verification sign-off form.
   - `docs/index.md`: Master documentation hub with unified technical navigation.
   - `docs/verification_plan.md`: End-to-end hardware verification plan detailing coverage matrices across RTL, analog, STA, PD, and closed-loop co-sim.
-- **Automated CI/CD**: Added GitHub Actions workflow (`.github/workflows/ci.yml`) providing automated linting, testbench execution, and model verification.
+- **Automated CI/CD Expansion**: Expanded GitHub Actions workflow (`.github/workflows/ci.yml`) to include RTL linting, integrated top-level system testbench execution, and automated PVT matrix validation.
+- **Makefile Developer Aliases**: Added top-10 standard aliases (`fmt`, `lint`, `test`, `build`, `report`, `check`) while retaining core sign-off targets.
+
+### Changed
+- Refactored `README.md` to include quick-navigation links, complete directory layout, and contribution instructions.
+- Adjusted Makefile clean target to safeguard committed simulation sign-off data.
+
+---
+
+## [1.1.0] - 2026-11-22
+
+### Added
 - **Physical Design Sign-off**: Integrated post-route OpenSTA timing back-annotation using extracted SPEF parasitics.
 - **Cross-Corner PVT Sign-off Matrix**: Generated automated 6-corner PVT sign-off summary report (`reports/pvt_cross_corner_matrix.rpt`).
+- **Antigravity Engineering Rules**: Added `AGENTS.md` and `.agents/rules/engineering-standards.md`.
 
 ### Changed
 - **Technical Tone Refinement**: Completely refactored `README.md` and documentation suite to remove promotional interview language and replace it with rigorous engineering analysis, clear scope boundaries, and explicit limitations.
 - **License Clarification**: Upgraded `LICENSE` to specifically define proprietary educational and portfolio terms for the Sky130 AVS Macro Project.
-- **Makefile Expansion**: Added developer convenience targets (`fmt`, `lint`, `test`, `build`, `report`, `check`) while retaining core sign-off targets.
 
 ### Fixed
 - Corrected git committer and author identities across Windows and WSL environments (`Nikhil24` / `2023ec_nikhilkm_b@nie.ac.in`).
-- Cleaned up untracked temporary waveform dumps and transient simulation artifacts from the repository root.
 
 ---
 
