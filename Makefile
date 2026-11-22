@@ -4,7 +4,15 @@
 
 SHELL := /bin/bash
 
-.PHONY: all sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model pvt_matrix energy_curves validate clean help test lint check build report fmt cpm-audit eda-regression
+PDK_ROOT ?= $(HOME)/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af
+
+.PHONY: all sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model pvt_matrix energy_curves validate clean help test lint check build report fmt cpm-audit eda-regression pdk-link
+
+pdk-link:
+	@if [ ! -e pdk_sky130A ] && [ -d $(PDK_ROOT)/sky130A ]; then \
+		echo "--> Linking SkyWater 130 PDK from $(PDK_ROOT)/sky130A..."; \
+		ln -s $(PDK_ROOT)/sky130A pdk_sky130A; \
+	fi
 
 all: sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model pvt_matrix energy_curves
 	@echo "=================================================================="
@@ -75,8 +83,8 @@ sim:
 	iverilog -g2012 -o sim/tb_avs_top.vvp rtl/level_shifter/level_shifter.v rtl/load/pipelined_mac_load.v rtl/cpm/critical_path_monitor.v rtl/controller/avs_controller.v rtl/top/avs_system_top.v sim/tb_avs_top.v
 	vvp sim/tb_avs_top.vvp
 
-analog:
-	@echo "--> Running ngspice transistor-level simulations..."
+analog: pdk-link
+	@echo "--> Running ngspice transistor-level BSIM4 simulations..."
 	cd analog/ldo && ngspice -b ldo_core.sp
 	cd analog/dac && ngspice -b dac_5bit_rstring.sp
 	python3 analog/dac/verify_dac_linearity.py

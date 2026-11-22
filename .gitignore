@@ -19,6 +19,8 @@ venv/
 
 # Large PDK Library files (>50MB triggers GitHub push warnings)
 sta/libs/*.lib
+pdk_*
+pdks/
 
 # Synthesis & Implementation
 synth/build/

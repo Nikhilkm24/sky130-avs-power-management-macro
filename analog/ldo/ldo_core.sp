@@ -10,30 +10,29 @@
 
 .title Sky130 Programmable LDO Regulator for AVS
 
-* Global Transistor Models (Sky130 Parameters)
-.model sky130_nmos NMOS (LEVEL=1 VTO=0.45 KP=180u LAMBDA=0.03 CJ=0.0008 CJSW=0.0003)
-.model sky130_pmos PMOS (LEVEL=1 VTO=-0.50 KP=70u LAMBDA=0.04 CJ=0.0009 CJSW=0.0003)
+* Include SkyWater 130nm BSIM4 PDK Models
+.lib "../../pdk_sky130A/libs.tech/ngspice/sky130.lib.spice" tt
 
 * -------------------------------------------------------------
 * Error Amplifier Subcircuit (High-Gain Two-Stage OTA)
 * -------------------------------------------------------------
 .subckt error_amp inp inm out vdd vss
 * NMOS Differential Input Pair (inp = VREF, inm = VFB)
-M1 n1 inp tail vss sky130_nmos W=20u L=0.5u
-M2 n2 inm tail vss sky130_nmos W=20u L=0.5u
+X1 n1 inp tail vss sky130_fd_pr__nfet_01v8 w=20 l=0.5
+X2 n2 inm tail vss sky130_fd_pr__nfet_01v8 w=20 l=0.5
 
 * Tail Current Source (I_tail = 25 uA)
-Mtail tail nbias vss vss sky130_nmos W=12u L=1.0u
+Xtail tail nbias vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
 Rbias vdd nbias 60k
-Mbias nbias nbias vss vss sky130_nmos W=12u L=1.0u
+Xbias nbias nbias vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
 
 * PMOS Active Current Mirror Load
-M3 n1 n1 vdd vdd sky130_pmos W=30u L=1.0u
-M4 n2 n1 vdd vdd sky130_pmos W=30u L=1.0u
+X3 n1 n1 vdd vdd sky130_fd_pr__pfet_01v8 w=30 l=1.0
+X4 n2 n1 vdd vdd sky130_fd_pr__pfet_01v8 w=30 l=1.0
 
 * High-Gain Second Stage Driver
-M5 out n2 vdd vdd sky130_pmos W=40u L=0.5u
-M6 out nbias vss vss sky130_nmos W=20u L=1.0u
+X5 out n2 vdd vdd sky130_fd_pr__pfet_01v8 w=40 l=0.5
+X6 out nbias vss vss sky130_fd_pr__nfet_01v8 w=20 l=1.0
 
 * Miller Pole-Splitting Compensation Network
 Rcomp out n_comp 3.6k
@@ -47,8 +46,8 @@ Ccomp n_comp n2 22.0p
 * Error amplifier comparing V_REF against divided feedback V_FB
 Xea vref vfb vgate vdd_in vss error_amp
 
-* Large PMOS Pass Transistor (W/L = 2000u / 0.15u)
-Mpass vdd_core vgate vdd_in vdd_in sky130_pmos W=2000u L=0.15u
+* Large PMOS Pass Transistor (W/L = 2000u / 0.15u, 200 fingers of 10u)
+Xpass vdd_core vgate vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=10 l=0.15 m=200
 
 * Resistive Feedback Network (Gain = 1 + Ra/Rb = 1 + 25k/100k = 1.25)
 * Maps Vref = 0.72V -> Vcore = 0.90V; Vref = 1.20V -> Vcore = 1.50V
@@ -78,18 +77,18 @@ Iload vcore 0 PULSE(5m 38m 2u 20n 20n 5u 12u)
 * Breaks feedback loop between LDO feedback node and amplifier input
 * to measure true return ratio T(s) = -v(vfb)/v(inm)
 Vref_ac vref_ac 0 DC 0.843
-M1_ac n1_ac vref_ac tail_ac 0 sky130_nmos W=20u L=0.5u
-M2_ac n2_ac inm_ac  tail_ac 0 sky130_nmos W=20u L=0.5u
-Mtail_ac tail_ac nbias_ac 0 0 sky130_nmos W=12u L=1.0u
+X1_ac n1_ac vref_ac tail_ac 0 sky130_fd_pr__nfet_01v8 w=20 l=0.5
+X2_ac n2_ac inm_ac  tail_ac 0 sky130_fd_pr__nfet_01v8 w=20 l=0.5
+Xtail_ac tail_ac nbias_ac 0 0 sky130_fd_pr__nfet_01v8 w=12 l=1.0
 Rbias_ac vdd nbias_ac 60k
-Mbias_ac nbias_ac nbias_ac 0 0 sky130_nmos W=12u L=1.0u
-M3_ac n1_ac n1_ac vdd vdd sky130_pmos W=30u L=1.0u
-M4_ac n2_ac n1_ac vdd vdd sky130_pmos W=30u L=1.0u
-M5_ac vgate_ac n2_ac vdd vdd sky130_pmos W=40u L=0.5u
-M6_ac vgate_ac nbias_ac 0 0 sky130_nmos W=20u L=1.0u
+Xbias_ac nbias_ac nbias_ac 0 0 sky130_fd_pr__nfet_01v8 w=12 l=1.0
+X3_ac n1_ac n1_ac vdd vdd sky130_fd_pr__pfet_01v8 w=30 l=1.0
+X4_ac n2_ac n1_ac vdd vdd sky130_fd_pr__pfet_01v8 w=30 l=1.0
+X5_ac vgate_ac n2_ac vdd vdd sky130_fd_pr__pfet_01v8 w=40 l=0.5
+X6_ac vgate_ac nbias_ac 0 0 sky130_fd_pr__nfet_01v8 w=20 l=1.0
 Rcomp_ac vgate_ac n_comp_ac 3.6k
 Ccomp_ac n_comp_ac n2_ac 22.0p
-Mpass_ac vcore_ac vgate_ac vdd vdd sky130_pmos W=2000u L=0.15u
+Xpass_ac vcore_ac vgate_ac vdd vdd sky130_fd_pr__pfet_01v8 w=10 l=0.15 m=200
 Ra_ac vcore_ac vfb_ac 25k
 Rb_ac vfb_ac 0 100k
 Resr_ac vcore_ac n_cout_ac 0.30

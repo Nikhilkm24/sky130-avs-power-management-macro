@@ -7,9 +7,10 @@
 * - Inherent monotonicity guarantees zero sign-inversion hazards in the AVS loop
 * - Real simulated DNL and INL extraction
 
-.title 5-Bit Resistor-String Reference DAC for Sky130 AVS
+.title 5-Bit Resistor-String Reference DAC for Sky130 AVS (BSIM4 Sign-Off)
 
-.model sky130_nmos NMOS (LEVEL=1 VTO=0.45 KP=180u LAMBDA=0.03)
+* Include SkyWater 130nm BSIM4 PDK Models
+.lib "../../pdk_sky130A/libs.tech/ngspice/sky130.lib.spice" tt
 
 * -------------------------------------------------------------
 * 32-Resistor Ladder Macro
@@ -67,39 +68,39 @@ Xladder vref vss
 + n0  n1  n2  n3  n4  n5  n6  n7  n8  n9  n10 n11 n12 n13 n14 n15
 + n16 n17 n18 n19 n20 n21 n22 n23 n24 n25 n26 n27 n28 n29 n30 n31 rstring_32tap
 
-* 32 NMOS Analog Selection Switches (W/L = 2u / 0.15u)
-Msw0  vout s0  n0  vss sky130_nmos W=2u L=0.15u
-Msw1  vout s1  n1  vss sky130_nmos W=2u L=0.15u
-Msw2  vout s2  n2  vss sky130_nmos W=2u L=0.15u
-Msw3  vout s3  n3  vss sky130_nmos W=2u L=0.15u
-Msw4  vout s4  n4  vss sky130_nmos W=2u L=0.15u
-Msw5  vout s5  n5  vss sky130_nmos W=2u L=0.15u
-Msw6  vout s6  n6  vss sky130_nmos W=2u L=0.15u
-Msw7  vout s7  n7  vss sky130_nmos W=2u L=0.15u
-Msw8  vout s8  n8  vss sky130_nmos W=2u L=0.15u
-Msw9  vout s9  n9  vss sky130_nmos W=2u L=0.15u
-Msw10 vout s10 n10 vss sky130_nmos W=2u L=0.15u
-Msw11 vout s11 n11 vss sky130_nmos W=2u L=0.15u
-Msw12 vout s12 n12 vss sky130_nmos W=2u L=0.15u
-Msw13 vout s13 n13 vss sky130_nmos W=2u L=0.15u
-Msw14 vout s14 n14 vss sky130_nmos W=2u L=0.15u
-Msw15 vout s15 n15 vss sky130_nmos W=2u L=0.15u
-Msw16 vout s16 n16 vss sky130_nmos W=2u L=0.15u
-Msw17 vout s17 n17 vss sky130_nmos W=2u L=0.15u
-Msw18 vout s18 n18 vss sky130_nmos W=2u L=0.15u
-Msw19 vout s19 n19 vss sky130_nmos W=2u L=0.15u
-Msw20 vout s20 n20 vss sky130_nmos W=2u L=0.15u
-Msw21 vout s21 n21 vss sky130_nmos W=2u L=0.15u
-Msw22 vout s22 n22 vss sky130_nmos W=2u L=0.15u
-Msw23 vout s23 n23 vss sky130_nmos W=2u L=0.15u
-Msw24 vout s24 n24 vss sky130_nmos W=2u L=0.15u
-Msw25 vout s25 n25 vss sky130_nmos W=2u L=0.15u
-Msw26 vout s26 n26 vss sky130_nmos W=2u L=0.15u
-Msw27 vout s27 n27 vss sky130_nmos W=2u L=0.15u
-Msw28 vout s28 n28 vss sky130_nmos W=2u L=0.15u
-Msw29 vout s29 n29 vss sky130_nmos W=2u L=0.15u
-Msw30 vout s30 n30 vss sky130_nmos W=2u L=0.15u
-Msw31 vout s31 n31 vss sky130_nmos W=2u L=0.15u
+* 32 NMOS Analog Selection Switches (SkyWater 130nm BSIM4 sky130_fd_pr__nfet_01v8, W/L = 2u / 0.15u)
+Xsw0  vout s0  n0  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw1  vout s1  n1  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw2  vout s2  n2  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw3  vout s3  n3  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw4  vout s4  n4  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw5  vout s5  n5  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw6  vout s6  n6  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw7  vout s7  n7  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw8  vout s8  n8  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw9  vout s9  n9  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw10 vout s10 n10 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw11 vout s11 n11 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw12 vout s12 n12 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw13 vout s13 n13 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw14 vout s14 n14 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw15 vout s15 n15 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw16 vout s16 n16 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw17 vout s17 n17 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw18 vout s18 n18 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw19 vout s19 n19 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw20 vout s20 n20 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw21 vout s21 n21 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw22 vout s22 n22 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw23 vout s23 n23 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw24 vout s24 n24 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw25 vout s25 n25 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw26 vout s26 n26 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw27 vout s27 n27 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw28 vout s28 n28 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw29 vout s29 n29 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw30 vout s30 n30 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw31 vout s31 n31 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
 
 * 5-to-32 Binary Decoder Driving Switch Gates S[31:0]
 * Evaluates (v(d4)*16 + v(d3)*8 + v(d2)*4 + v(d1)*2 + v(d0)) == k
