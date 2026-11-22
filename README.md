@@ -8,7 +8,7 @@
 [![CI: Automated Verification](https://github.com/Nikhilkm24/sky130-avs-power-management-macro/actions/workflows/ci.yml/badge.svg)](https://github.com/Nikhilkm24/sky130-avs-power-management-macro/actions/workflows/ci.yml)
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
-[**Documentation Index**](docs/index.md) | [**Verification Claim Audit**](reports/VERIFICATION_CLAIM_AUDIT.md) | [**System Architecture**](docs/SYSTEM_ARCHITECTURE.md) | [**Specification**](docs/SPECIFICATION.md) | [**Verification Plan**](docs/verification_plan.md) | [**Build Guide**](BUILDING.md) | [**Contributing**](CONTRIBUTING.md) | [**Changelog**](CHANGELOG.md)
+[**Research Portal**](research/README.md) | [**Research Guide (PDF)**](research/Sky130_AVS_Research_Implementation_Guide.pdf) | [**Documentation Index**](docs/index.md) | [**Verification Claim Audit**](reports/VERIFICATION_CLAIM_AUDIT.md) | [**System Architecture**](docs/SYSTEM_ARCHITECTURE.md) | [**Specification**](docs/SPECIFICATION.md) | [**Verification Plan**](docs/verification_plan.md) | [**Build Guide**](BUILDING.md) | [**Contributing**](CONTRIBUTING.md) | [**Changelog**](CHANGELOG.md)
 
 ---
 
