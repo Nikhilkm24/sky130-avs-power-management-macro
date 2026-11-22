@@ -263,7 +263,7 @@ The execution roadmap is structured into 11 rigorous, sequential milestones:
 - [x] **Step 2:** Generate complete 14-figure publication research proof suite in `research/figures/`.
 - [x] **Step 3:** Compile comprehensive publication-grade PDF Implementation Guide (`research/Sky130_AVS_Research_Implementation_Guide.pdf`).
 - [x] **Step 4:** Author exhaustive reference markdown guide (`research/RESEARCH_IMPLEMENTATION_GUIDE.md`).
-- [ ] **Step 5 (Phase B):** Map CPM delay stages to physical `sky130_fd_sc_hd__inv_1` gates and re-run Yosys netlist audit.
+- [x] **Step 5 (Phase B):** Map CPM delay stages to physical `sky130_fd_sc_hd__inv_1` gates and re-run Yosys netlist audit.
 - [ ] **Step 6 (Phase C):** Expand multi-corner OpenSTA dataset from $N=6$ to $N=24$ characterization points.
 - [ ] **Step 7 (Phase D):** Implement mathematical uncertainty budgeting script `models/uncertainty_cpm.py`.
 - [ ] **Step 8 (Phase E):** Implement dual-replica accumulator carry-path monitor and workload sentinel in RTL.

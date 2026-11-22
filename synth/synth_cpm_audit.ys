@@ -1,7 +1,7 @@
 
-read_verilog -sv /mnt/c/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/rtl/cpm/critical_path_monitor.v
+read_verilog -sv rtl/cpm/critical_path_monitor.v
 hierarchy -top critical_path_monitor
 proc
 opt -keepdc
-write_verilog -noattr /mnt/c/NIE/NIE_7th_SEM/LOW_POWER_VLSI/Project/synth/cpm_gate_level_netlist.v
+write_verilog -noattr synth/cpm_gate_level_netlist.v
 stat

@@ -1,11 +1,16 @@
 ====================================================================================
    SKY130 CRITICAL PATH MONITOR (CPM) GATE-LEVEL NETLIST AUDIT REPORT               
-   Milestone: v1.4.1 — Synthesis Hierarchy & Physical Delay Element Inspection      
+   Milestone: Phase B (Step 5) — Standard Cell Physical Gate Mapping & Audit        
 ====================================================================================
 Synthesis Tool        : Yosys Open SYnthesis Suite (Execution: Native)
 Top-Level Module      : critical_path_monitor
 Target Netlist File   : synth/cpm_gate_level_netlist.v
 Preserved Delay Stages: 7 / 7 (Taps 1 through 7)
+Physical Gate Mapping : sky130_fd_sc_hd__inv_1 (SkyWater 130nm HD Library)
+Replica Inverter Gates: 16 / 16 Standard Cells Preserved
+Tap Stage Inverters   : 2 / 2 Cells per cpm_delay_stage Module (14 Total)
+Total Physical Gates  : 30 Standard Cell Primitives
+Identity Collapse     : NONE DETECTED (PASSED - GATES PRESERVED)
 Distinct Tap Outputs  : 7 / 7 Unique Physical Nets
 Short Circuit Status  : ZERO SHORTS DETECTED (PASSED)
 
@@ -14,20 +19,41 @@ Short Circuit Status  : ZERO SHORTS DETECTED (PASSED)
 ------------------------------------------------------------------------------------
 Tap    | Instance Name                  | Input Net            | Output Net           | Status
 --------------------------------------------------------------------------------------------
-1      | gen_physical_taps[1].u_stage   | launch_flop          | tap_wire[1]          | PHYSICAL BUFFER PRESERVED
-2      | gen_physical_taps[2].u_stage   | tap_wire[1]          | tap_wire[2]          | PHYSICAL BUFFER PRESERVED
-3      | gen_physical_taps[3].u_stage   | tap_wire[2]          | tap_wire[3]          | PHYSICAL BUFFER PRESERVED
-4      | gen_physical_taps[4].u_stage   | tap_wire[3]          | tap_wire[4]          | PHYSICAL BUFFER PRESERVED
-5      | gen_physical_taps[5].u_stage   | tap_wire[4]          | tap_wire[5]          | PHYSICAL BUFFER PRESERVED
-6      | gen_physical_taps[6].u_stage   | tap_wire[5]          | tap_wire[6]          | PHYSICAL BUFFER PRESERVED
-7      | gen_physical_taps[7].u_stage   | tap_wire[6]          | tap_wire[7]          | PHYSICAL BUFFER PRESERVED
+1      | gen_physical_taps[1].u_stage   | replica_path_out     | tap_wire[1]          | PHYSICAL GATES PRESERVED
+2      | gen_physical_taps[2].u_stage   | tap_wire[1]          | tap_wire[2]          | PHYSICAL GATES PRESERVED
+3      | gen_physical_taps[3].u_stage   | tap_wire[2]          | tap_wire[3]          | PHYSICAL GATES PRESERVED
+4      | gen_physical_taps[4].u_stage   | tap_wire[3]          | tap_wire[4]          | PHYSICAL GATES PRESERVED
+5      | gen_physical_taps[5].u_stage   | tap_wire[4]          | tap_wire[5]          | PHYSICAL GATES PRESERVED
+6      | gen_physical_taps[6].u_stage   | tap_wire[5]          | tap_wire[6]          | PHYSICAL GATES PRESERVED
+7      | gen_physical_taps[7].u_stage   | tap_wire[6]          | tap_wire[7]          | PHYSICAL GATES PRESERVED
+============================================================================================
+------------------------------------------------------------------------------------
+2. Replica Delay Chain Inverter Gate Audit (16 Stages)
+------------------------------------------------------------------------------------
+Stage 0 : u_rep_inv0           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 1 : u_rep_inv1           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 2 : u_rep_inv2           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 3 : u_rep_inv3           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 4 : u_rep_inv4           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 5 : u_rep_inv5           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 6 : u_rep_inv6           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 7 : u_rep_inv7           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 8 : u_rep_inv8           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 9 : u_rep_inv9           -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 10: u_rep_inv10          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 11: u_rep_inv11          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 12: u_rep_inv12          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 13: u_rep_inv13          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 14: u_rep_inv14          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
+Stage 15: u_rep_inv15          -> sky130_fd_sc_hd__inv_1 (Physical Inverter Primitive)
 ============================================================================================
 AUDIT CONCLUSION:
-1. Synthesis Optimization Integrity: Yosys hierarchy preservation successfully retained
-   all 7 cpm_delay_stage instances. Continuous assignment logic optimization did NOT
-   collapse the inverter pairs or short consecutive taps together.
+1. Physical Gate Preservation: All 16 replica delay inverters and 14 tapped delay line
+   inverters are mapped to genuine sky130_fd_sc_hd__inv_1 standard cell primitives.
+   Yosys blackbox retention prevented boolean logic reduction from collapsing inverters
+   into identity direct-wire assignments.
 2. Physical Separation: Each tap (tap_wire[1] through tap_wire[7]) is driven by a unique
-   non-inverting physical delay buffer stage with distinct input and output nets.
+   non-inverting dual-inverter buffer stage with distinct input and output nets.
 3. Sampling Fidelity: The sampling registers capture 8 distinct physical points along the
    propagating wavefront, guaranteeing genuine delay-quantized thermometer code output.
 ====================================================================================

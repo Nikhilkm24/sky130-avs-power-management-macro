@@ -21,6 +21,22 @@
 
 `timescale 1ns / 1ps
 
+// ==============================================================================
+// SkyWater 130nm HD Inverter Standard Cell Model
+// Used for physical gate mapping in both synthesis and simulation
+// ==============================================================================
+`ifndef SKY130_FD_SC_HD__INV_1_DEFINED
+`define SKY130_FD_SC_HD__INV_1_DEFINED
+(* blackbox *)
+module sky130_fd_sc_hd__inv_1 (
+    output wire Y,
+    input  wire A
+);
+    // Functional standard cell inverter model
+    assign Y = ~A;
+endmodule
+`endif
+
 // Explicit Non-Inverting Delay Cell for Tapped Delay Stages
 (* keep_hierarchy = 1 *)
 module cpm_delay_stage #(
@@ -29,14 +45,22 @@ module cpm_delay_stage #(
     input  wire in,
     output wire out
 );
-    // Two cascaded inverters with keep/dont_touch attributes to prevent
-    // logic synthesis from pruning or merging consecutive taps.
+    // Two cascaded Sky130 standard cell inverters with keep/dont_touch attributes
+    // to guarantee that synthesis retains physical standard cell instances.
     (* keep = "true", dont_touch = "true" *) wire inv1_out;
     (* keep = "true", dont_touch = "true" *) wire inv2_out;
 
-    assign #(DELAY_NS / 2.0) inv1_out = ~in;
-    assign #(DELAY_NS / 2.0) inv2_out = ~inv1_out;
-    assign out = inv2_out;
+    sky130_fd_sc_hd__inv_1 u_inv1 (
+        .A(in),
+        .Y(inv1_out)
+    );
+    sky130_fd_sc_hd__inv_1 u_inv2 (
+        .A(inv1_out),
+        .Y(inv2_out)
+    );
+
+    // Timing-aware simulation delay annotation across the dual-inverter cell
+    assign #(DELAY_NS) out = inv2_out;
 endmodule
 
 module critical_path_monitor #(
@@ -68,30 +92,31 @@ module critical_path_monitor #(
 
     // --------------------------------------------------------------------------
     // 2. Synthesizable Replica Delay Chain (16 Inversion Stages)
+    // Mapped explicitly to sky130_fd_sc_hd__inv_1 standard cell primitives
     // --------------------------------------------------------------------------
     wire replica_start = launch_flop;
     (* keep = "true", dont_touch = "true" *) wire [15:0] rep_net;
+    (* keep = "true" *) wire replica_path_out;
 
-    localparam real INV_DELAY = REPLICA_DELAY_NS / 16.0;
+    sky130_fd_sc_hd__inv_1 u_rep_inv0  (.A(replica_start), .Y(rep_net[0]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv1  (.A(rep_net[0]),    .Y(rep_net[1]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv2  (.A(rep_net[1]),    .Y(rep_net[2]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv3  (.A(rep_net[2]),    .Y(rep_net[3]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv4  (.A(rep_net[3]),    .Y(rep_net[4]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv5  (.A(rep_net[4]),    .Y(rep_net[5]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv6  (.A(rep_net[5]),    .Y(rep_net[6]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv7  (.A(rep_net[6]),    .Y(rep_net[7]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv8  (.A(rep_net[7]),    .Y(rep_net[8]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv9  (.A(rep_net[8]),    .Y(rep_net[9]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv10 (.A(rep_net[9]),    .Y(rep_net[10]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv11 (.A(rep_net[10]),   .Y(rep_net[11]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv12 (.A(rep_net[11]),   .Y(rep_net[12]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv13 (.A(rep_net[12]),   .Y(rep_net[13]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv14 (.A(rep_net[13]),   .Y(rep_net[14]));
+    sky130_fd_sc_hd__inv_1 u_rep_inv15 (.A(rep_net[14]),   .Y(rep_net[15]));
 
-    assign #(INV_DELAY) rep_net[0]  = ~replica_start;
-    assign #(INV_DELAY) rep_net[1]  = ~rep_net[0];
-    assign #(INV_DELAY) rep_net[2]  = ~rep_net[1];
-    assign #(INV_DELAY) rep_net[3]  = ~rep_net[2];
-    assign #(INV_DELAY) rep_net[4]  = ~rep_net[3];
-    assign #(INV_DELAY) rep_net[5]  = ~rep_net[4];
-    assign #(INV_DELAY) rep_net[6]  = ~rep_net[5];
-    assign #(INV_DELAY) rep_net[7]  = ~rep_net[6];
-    assign #(INV_DELAY) rep_net[8]  = ~rep_net[7];
-    assign #(INV_DELAY) rep_net[9]  = ~rep_net[8];
-    assign #(INV_DELAY) rep_net[10] = ~rep_net[9];
-    assign #(INV_DELAY) rep_net[11] = ~rep_net[10];
-    assign #(INV_DELAY) rep_net[12] = ~rep_net[11];
-    assign #(INV_DELAY) rep_net[13] = ~rep_net[12];
-    assign #(INV_DELAY) rep_net[14] = ~rep_net[13];
-    assign #(INV_DELAY) rep_net[15] = ~rep_net[14];
-
-    wire replica_path_out = rep_net[15];
+    // Timing-aware simulation delay annotation across the 16-stage replica chain
+    assign #(REPLICA_DELAY_NS) replica_path_out = rep_net[15];
 
     // --------------------------------------------------------------------------
     // 3. Real Physical Tapped Delay Line
