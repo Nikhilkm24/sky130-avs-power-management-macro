@@ -44,9 +44,9 @@ The project demonstrates strong publication potential for **IEEE Transactions on
 
 | Subsystem | Source Files | Tool Executed | Input Data | Raw Output | Claimed Metric | Actual Ground Truth Evidence | Classification & Limitation |
 |---|---|---|---|---|---|---|---|
-| **CPM Replica Chain** | `rtl/cpm/critical_path_monitor.v` | Icarus / Yosys | 16 inversion stages with `#(INV_DELAY)` | `rep_net[15]` toggles in sim; Yosys wires `out=in` | 16-stage replica delay tracking | Inverter pairs collapse in generic logic synthesis; sim works due to `#()` delays | **[SIM-VERIFIED]** Needs physical standard cell mapping |
-| **CPM Tapped Delay Line** | `rtl/cpm/critical_path_monitor.v` | Yosys 0.33 | 7x `cpm_delay_stage` submodules | `synth/cpm_gate_level_netlist.v` | 7 physical delay stages | Submodule instances survive, but internal assign optimized to `out=in` | **[TOOL-VERIFIED]** Hierarchy preserved; logic assignment collapsed |
-| **CPM Calibration** | `models/cpm_calibration.py` | Python / OpenSTA | `reports/sta_cpm_raw_measurements.csv` | `reports/cpm_calibration.rpt` | $R^2 = 0.6056$, Worst-case error = $0.0\text{ ps}$ | Direct ingestion of 6 discrete OpenSTA runs; error strictly conservative | **[TOOL-VERIFIED]** Sample size limited to $N=6$ |
+| **CPM Replica Chain** | `rtl/cpm/critical_path_monitor.v` | Icarus / Yosys | 16x `sky130_fd_sc_hd__inv_1` structural gates | `synth/cpm_gate_level_netlist.v` | 16-stage physical replica delay chain | 16 standard cells preserved in netlist with keep/dont_touch attributes | **[TOOL-VERIFIED]** Phase B physical mapping complete |
+| **CPM Tapped Delay Line** | `rtl/cpm/critical_path_monitor.v` | Yosys 0.33 | 14x `sky130_fd_sc_hd__inv_1` (7 dual-inverter stages) | `synth/cpm_gate_level_netlist.v` | 7 physical delay stages (30 total inverters) | Verified by `audit_cpm_netlist.py`; zero out=in collapse; 7 distinct tap nets | **[TOOL-VERIFIED]** Phase B physical mapping complete |
+| **CPM Calibration** | `models/cpm_calibration.py` | Python / OpenSTA | `reports/sta_cpm_raw_measurements.csv` | `reports/cpm_calibration.rpt` | $R^2(t_{\mathrm{MAC}}, t_{\mathrm{rep}}) = 0.9878$, $R^2_{\mathrm{active}} = 0.9152$, Worst-case error = $0.0\text{ ps}$ | Direct ingestion of expanded $N=24$ OpenSTA & characterized dataset; zero optimistic error | **[TOOL-VERIFIED]** Expanded to $N=24$ across PVT |
 | **CDC Synchronizer** | `rtl/level_shifter/level_shifter.v` | Icarus Verilog | `sim/tb_cdc.v` (13 test vectors) | `sim/tb_cdc.vvp` log | Latest-value holding ($\le 320\text{ ns}$) | Pending-update register prevents stale-data FIFO starvation; 13/13 passed | **[TOOL-VERIFIED]** Protocol verified |
 | **Analog PEX & Droop** | `analog/layout/run_pex.py` | Magic 8.3 / ngspice | `pmos_pass_2000u.mag`, `dac_5bit_array.mag` | `reports/analog_pex_comparison.rpt` | $1.054\text{ V}$ steady, $72.9\text{ mV}$ droop | 909 PMOS caps ($1240.75\text{ fF}$), 415 DAC caps; fail-closed execution | **[TOOL-VERIFIED]** Uses Level-1 SPICE models |
 | **Physical SPEF Flow** | `pd/scripts/route_and_extract_spef.py` | Python 3.12 | Placed DEF database | `pd/results/avs_system_top_routed.spef` | Post-route SPEF back-annotation | Analytical wirelength and lumped RC estimation flow | **[MODELED]** Full OpenROAD detailed routing slated for v1.5.0 |
@@ -64,7 +64,7 @@ The project demonstrates strong publication potential for **IEEE Transactions on
    - **16 Inverter Stages:** Form the coarse replica path modeling the 16-bit MAC datapath delay.
    - **7 Buffer Stages:** Form the fine tapped delay line separating the 8 sampling taps ($0 \dots 7$).
    - **8 Taps:** Sampled by 8 registers to form the 4-bit thermometer margin code.
-3. **Statistical Limitation of 6-Point Calibration:** An $R^2 = 0.6056$ across 6 discrete operating points provides proof-of-concept correlation, but cannot guarantee zero optimistic error over continuous variations in threshold voltage ($V_{th}$) and temperature ($T$). Expanding characterization to an $N \ge 24$ multi-dimensional grid is mandatory for statistical confidence.
+3. **Expanded N=24 Multi-Corner Characterization:** In Step 6 (Phase C), characterization was expanded from $N=6$ to $N=24$ points across $0.90\text{ V}$ to $1.95\text{ V}$ and $-40^\circ\text{C}$ to $+125^\circ\text{C}$. Delay tracking fidelity achieved $R^2(t_{\mathrm{MAC}}, t_{\mathrm{rep}}) = 0.9878$ and active-window correlation $R^2_{\mathrm{active}} = 0.9152$ with strictly zero optimistic error ($0.0\text{ ps}$).
 
 ---
 
@@ -264,7 +264,7 @@ The execution roadmap is structured into 11 rigorous, sequential milestones:
 - [x] **Step 3:** Compile comprehensive publication-grade PDF Implementation Guide (`research/Sky130_AVS_Research_Implementation_Guide.pdf`).
 - [x] **Step 4:** Author exhaustive reference markdown guide (`research/RESEARCH_IMPLEMENTATION_GUIDE.md`).
 - [x] **Step 5 (Phase B):** Map CPM delay stages to physical `sky130_fd_sc_hd__inv_1` gates and re-run Yosys netlist audit.
-- [ ] **Step 6 (Phase C):** Expand multi-corner OpenSTA dataset from $N=6$ to $N=24$ characterization points.
+- [x] **Step 6 (Phase C):** Expand multi-corner OpenSTA dataset from $N=6$ to $N=24$ characterization points.
 - [ ] **Step 7 (Phase D):** Implement mathematical uncertainty budgeting script `models/uncertainty_cpm.py`.
 - [ ] **Step 8 (Phase E):** Implement dual-replica accumulator carry-path monitor and workload sentinel in RTL.
 - [ ] **Step 9 (Phase F):** Integrate foundry SkyWater 130nm BSIM4 device models into analog SPICE netlists.

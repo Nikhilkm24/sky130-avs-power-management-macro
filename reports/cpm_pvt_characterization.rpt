@@ -1,16 +1,34 @@
-====================================================================================
-   SKY130 CPM PVT 6-POINT CROSS-CORNER CHARACTERIZATION REPORT                      
-   Milestone: v1.4.1 — Verification Integrity & Raw Measurement Ingestion           
-====================================================================================
-Corner Condition       | Core VDD | Temp(C) | t_MAC(ns) | STA Slack  | CPM Code | Safety Status
---------------------------------------------------------------------------------------------
-CORNER_1_TT            | 1.800    | 25      | 7.600     | 5.133      | 8        | SAFE GUARDED
-CORNER_2_FF            | 1.950    | -40     | 4.671     | 8.270      | 8        | SAFE GUARDED
-CORNER_3_SS            | 1.400    | -40     | 33.283    | -20.740    | 0        | EMERGENCY CLAMP
-CORNER_4_AVS_NOM       | 1.200    | 25      | 9.870     | 2.863      | 8        | SAFE GUARDED
-CORNER_5_AVS_LOCK      | 1.054    | 25      | 12.350    | 0.383      | 1        | DEFICIT (Up-step)
-CORNER_6_AVS_MIN       | 0.940    | -40     | 11.820    | 0.913      | 4        | SAFE GUARDED
-============================================================================================
-SUMMARY: Correlation R^2 = 0.6056 | Worst-Case Optimistic Error = 0.0 ps
-Data source: reports/sta_cpm_raw_measurements.csv. Jitter and setup budgets fully included.
-====================================================================================
+=======================================================================================================
+   SKY130 CPM PVT 24-POINT CROSS-CORNER CHARACTERIZATION REPORT                                        
+   Milestone: Phase C (Step 6) — Expanded N=24 Multi-Corner Characterization Grid Sign-Off             
+=======================================================================================================
+Corner Condition           | Core VDD | Temp(C) | t_MAC(ns) | STA Slack  | CPM Code | Safety Status
+--------------------------------------------------------------------------------------------------------------
+CORNER_01_TT_1V80_25C      | 1.800    | 25      | 7.600     | 5.133      | 8        | SAFE GUARDED
+CORNER_02_FF_1V95_N40C     | 1.950    | -40     | 4.671     | 8.270      | 8        | SAFE GUARDED
+CORNER_03_SS_1V40_N40C     | 1.400    | -40     | 33.283    | -20.740    | 0        | EMERGENCY CLAMP
+CORNER_04_TT_1V50_25C      | 1.500    | 25      | 8.420     | 4.313      | 8        | SAFE GUARDED
+CORNER_05_TT_1V35_25C      | 1.350    | 25      | 9.120     | 3.613      | 8        | SAFE GUARDED
+CORNER_06_TT_1V25_25C      | 1.250    | 25      | 9.550     | 3.183      | 8        | SAFE GUARDED
+CORNER_07_TT_1V20_25C      | 1.200    | 25      | 9.870     | 2.863      | 8        | SAFE GUARDED
+CORNER_08_TT_1V15_25C      | 1.150    | 25      | 10.500    | 2.233      | 8        | SAFE GUARDED
+CORNER_09_TT_1V10_25C      | 1.100    | 25      | 11.200    | 1.533      | 7        | SAFE GUARDED
+CORNER_10_TT_1V07_25C      | 1.070    | 25      | 11.850    | 0.883      | 4        | SAFE GUARDED
+CORNER_11_TT_1V054_25C     | 1.054    | 25      | 12.350    | 0.383      | 1        | DEFICIT (Up-step)
+CORNER_12_TT_1V00_25C      | 1.000    | 25      | 13.150    | -0.417     | 0        | EMERGENCY CLAMP
+CORNER_13_TT_0V95_25C      | 0.950    | 25      | 14.600    | -1.867     | 0        | EMERGENCY CLAMP
+CORNER_14_TT_0V90_25C      | 0.900    | 25      | 16.900    | -4.167     | 0        | EMERGENCY CLAMP
+CORNER_15_TT_1V054_N40C    | 1.054    | -40     | 11.450    | 1.283      | 6        | SAFE GUARDED
+CORNER_16_TT_1V054_85C     | 1.054    | 85      | 13.050    | -0.317     | 0        | EMERGENCY CLAMP
+CORNER_17_TT_1V054_125C    | 1.054    | 125     | 13.800    | -1.067     | 0        | EMERGENCY CLAMP
+CORNER_18_TT_1V80_N40C     | 1.800    | -40     | 7.100     | 5.633      | 8        | SAFE GUARDED
+CORNER_19_TT_1V80_125C     | 1.800    | 125     | 8.550     | 4.183      | 8        | SAFE GUARDED
+CORNER_20_SS_1V50_125C     | 1.500    | 125     | 14.200    | -1.467     | 0        | EMERGENCY CLAMP
+CORNER_21_SS_1V40_125C     | 1.400    | 125     | 16.500    | -3.767     | 0        | EMERGENCY CLAMP
+CORNER_22_SS_1V20_N40C     | 1.200    | -40     | 48.500    | -35.767    | 0        | EMERGENCY CLAMP
+CORNER_23_FF_0V94_N40C     | 0.940    | -40     | 11.820    | 0.913      | 4        | SAFE GUARDED
+CORNER_24_FS_1V20_25C      | 1.200    | 25      | 9.350     | 3.383      | 8        | SAFE GUARDED
+==============================================================================================================
+SUMMARY: N = 24 Points | Delay Tracking R^2 = 0.9878 | Active Window R^2 = 0.9152
+Worst-Case Optimistic Error = 0.0 ps (Strictly Conservative) | Data: reports/sta_cpm_raw_measurements.csv
+=======================================================================================================
