@@ -40,9 +40,10 @@ sim:
 	vvp sim/tb_avs_top.vvp
 
 analog:
-	@echo "--> Running ngspice simulations..."
+	@echo "--> Running ngspice transistor-level simulations..."
 	cd analog/ldo && ngspice -b ldo_core.sp
 	cd analog/dac && ngspice -b dac_5bit_rstring.sp
+	python3 analog/dac/verify_dac_linearity.py
 	cd analog/bgr && ngspice -b bgr_1v2.sp
 
 synth:
