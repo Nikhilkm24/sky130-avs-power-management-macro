@@ -1,0 +1,28 @@
+==================================================================
+   SKY130 DUAL-RAIL PDN STATIC & DYNAMIC IR DROP REPORT           
+==================================================================
+Macro Floorplan Area            : 450.0 um x 320.0 um (0.144 mm^2)
+Standard Cell Utilization Area  : 420.0 um x 290.0 um (0.122 mm^2)
+Total Standard Cell Rows        : 106 (Row Height: 2.72 um)
+Vertical Routing Layer          : met4 (Width: 4.8 um, Pitch: 30.0 um)
+Horizontal Routing Layer        : met5 (Width: 4.8 um, Pitch: 30.0 um)
+
+------------------------------------------------------------------
+1. Regulated Core Domain (VDD_CORE: 0.90V - 1.50V)
+------------------------------------------------------------------
+Peak Operational Current (50 MHz) : 50.0 mA
+Equivalent PDN Grid Resistance    : 194.46 mOhm
+Maximum Worst-Case IR Drop        : 9.72 mV
+IR Drop Percentage @ 1.10V Typ    : 0.88 % (Budget: < 2.50%)
+IR Drop Percentage @ 0.90V Min    : 1.08 % (Budget: < 3.00%)
+Status: PASSED SIGN-OFF SPECIFICATION
+
+------------------------------------------------------------------
+2. Static I/O & Controller Domain (VDD_1V8: 1.80V)
+------------------------------------------------------------------
+Peak Operational Current          : 15.0 mA
+Equivalent PDN Grid Resistance    : 285.00 mOhm
+Maximum Worst-Case IR Drop        : 4.27 mV
+IR Drop Percentage @ 1.80V        : 0.24 % (Budget: < 1.00%)
+Status: PASSED SIGN-OFF SPECIFICATION
+==================================================================
