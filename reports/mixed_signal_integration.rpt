@@ -31,5 +31,30 @@ Controller Sampling Clock  : 12.5 MHz (Period: 80.00 ns)
   Post-Fault Recovery      : Re-settled smoothly to nominal target
 
 ------------------------------------------------------------------
+4. Transistor-Level SPICE Energy-per-Op Integration (ngspice-42)
+------------------------------------------------------------------
+  Operating Window         : 5.0 us to 25.0 us (20.0 us duration = 1500 Ops @ 75 MHz)
+  Supply Voltage (VDD_1V8) : 1.800 V
+  Digital Workload Model   : Active CMOS Switching Model (Req = 150 Ohms)
+
+  [A] Fixed Worst-Case Ceiling Sign-Off (Code 31):
+      Regulated Core Voltage: 1.499 V
+      Supply Energy Integral: 367.85 nJ (0.368 uJ)
+      Core Energy Integral  : 299.73 nJ (0.300 uJ)
+      Supply Energy-per-Op  : 245.24 pJ/operation
+      Core Energy-per-Op    : 199.82 pJ/operation
+
+  [B] Adaptive Setpoint Locked (Code 8):
+      Regulated Core Voltage: 1.054 V
+      Supply Energy Integral: 260.77 nJ (0.261 uJ)
+      Core Energy Integral  : 148.05 nJ (0.148 uJ)
+      Supply Energy-per-Op  : 173.85 pJ/operation
+      Core Energy-per-Op    : 98.70 pJ/operation
+
+  [C] Net Energy Savings Measured from SPICE:
+      Supply Energy Saving  : 29.11 % (Linear LDO battery current reduction)
+      Core Energy Saving    : 50.61 % (CMOS dynamic switching power halving)
+
+------------------------------------------------------------------
 Overall Mixed-Signal Status: FULL CLOSED-LOOP COMPLIANCE VERIFIED
 ==================================================================

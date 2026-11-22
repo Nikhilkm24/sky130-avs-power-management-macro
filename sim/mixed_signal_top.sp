@@ -235,7 +235,9 @@ echo "Running Transistor-Level Mixed-Signal Integration in ngspice"
 echo "=========================================================="
 
 tran 10n 55u
-wrdata mixed_signal_top_transient.data v(vdd_core) v(vref_dac) v(vbgr)
+let i_supply = -vdd1v8#branch
+let p_supply = 1.80 * i_supply
+wrdata mixed_signal_top_transient.data v(vdd_core) v(vref_dac) v(vbgr) i_supply p_supply
 
 echo "BGR Reference Voltage:"
 print v(vbgr)[100]

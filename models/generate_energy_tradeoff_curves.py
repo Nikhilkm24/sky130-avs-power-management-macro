@@ -60,23 +60,35 @@ def generate_energy_tradeoffs():
     print(f"[Energy] Wrote CSV dataset: {csv_file}")
 
     # -------------------------------------------------------------
-    # 2. Multi-Panel Figure Generation
+    # 2. Multi-Panel Figure Generation with SPICE Sign-off Overlay
     # -------------------------------------------------------------
     fig, axes = plt.subplots(2, 2, figsize=(14, 11))
 
+    # SPICE-Extracted Benchmark Data Points (ngspice-42 supply & core integrals)
+    spice_v_fixed = 1.499
+    spice_v_adapt = 1.054
+    spice_e_cor_fixed = 199.82 # pJ
+    spice_e_cor_adapt = 98.70  # pJ (50.61% saving)
+    spice_e_sup_fixed = 245.24 # pJ
+    spice_e_sup_adapt = 173.85 # pJ (29.11% saving)
+
     # Panel A: Energy per Op vs Voltage
     ax0 = axes[0, 0]
-    ax0.plot(voltages, e_total_pj, 'b-o', linewidth=2.2, label='Total Energy per Op (AVS Operating Curve)')
-    ax0.axhline(e_fixed_pj, color='crimson', linestyle='--', linewidth=2.0, label=f'Fixed Sign-off @ 1.50V ({e_fixed_pj:.1f} pJ)')
-    # Highlight AVS Optimal Operating Point (1.055V)
-    idx_opt = np.argmin(np.abs(voltages - 1.055))
-    ax0.scatter([voltages[idx_opt]], [e_total_pj[idx_opt]], color='gold', s=160, zorder=6, edgecolors='black', label=f'AVS Locked Point (1.055V, {e_total_pj[idx_opt]:.1f} pJ)')
-    ax0.axvspan(0.95, 1.10, color='lightgreen', alpha=0.3, label='Safe AVS Adaptive Window (41.4% Saving)')
+    ax0.plot(voltages, e_total_pj, 'b-', linewidth=2.0, label='Modeled Core Energy per Op')
+    ax0.axhline(e_fixed_pj, color='crimson', linestyle='--', linewidth=1.8, label=f'Fixed Sign-off Baseline ({e_fixed_pj:.1f} pJ)')
+    # Overlay SPICE measured points
+    ax0.scatter([spice_v_fixed, spice_v_adapt], [spice_e_cor_fixed, spice_e_cor_adapt],
+                color='red', marker='s', s=120, zorder=7, edgecolors='black',
+                label=f'SPICE Core: {spice_e_cor_fixed:.1f} pJ -> {spice_e_cor_adapt:.1f} pJ (-50.6%)')
+    ax0.scatter([spice_v_fixed, spice_v_adapt], [spice_e_sup_fixed, spice_e_sup_adapt],
+                color='darkviolet', marker='^', s=130, zorder=7, edgecolors='black',
+                label=f'SPICE Supply: {spice_e_sup_fixed:.1f} pJ -> {spice_e_sup_adapt:.1f} pJ (-29.1%)')
+    ax0.axvspan(0.95, 1.10, color='lightgreen', alpha=0.3, label='Safe AVS Adaptive Window (1.054V Target)')
     ax0.set_xlabel('Core Supply Voltage VDD_CORE (V)', fontweight='bold')
     ax0.set_ylabel('Energy per Operation (pJ/cycle)', fontweight='bold')
     ax0.set_title('(A) Energy-per-Operation vs. Regulated Voltage', fontweight='bold', fontsize=11)
     ax0.grid(True, linestyle=':', alpha=0.6)
-    ax0.legend(loc='upper left', fontsize=9, framealpha=0.9)
+    ax0.legend(loc='upper left', fontsize=8.5, framealpha=0.9)
 
     # Panel B: Power Breakdown (Dynamic vs Leakage vs Overhead)
     ax1 = axes[0, 1]
