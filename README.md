@@ -400,9 +400,9 @@ The verification suite can be executed using the unified Makefile:
 
 ## 14. License
 
-Copyright © 2026 Nikhil Mahesh  
-Cloud Mushroom Operations Centre — All Rights Reserved  
+Copyright © 2026 Nikhil KM (Nikhil Mahesh)  
+Sky130 Adaptive Voltage Scaling (AVS) Macro Project — All Rights Reserved  
 
-This repository is made available for educational and portfolio reference purposes only. The source code, schematics, documentation, and all associated materials in this repository are proprietary. Unauthorized commercial use, redistribution, modification, or deployment of this system or any derivative thereof without explicit written permission from the author is strictly prohibited.
+This repository and its contents are made available for educational and portfolio reference purposes only. The source code, RTL architectures, analog schematics, SPICE netlists, physical design layouts, verification suites, documentation, and all associated engineering artifacts in this repository are proprietary. Unauthorized commercial use, redistribution, modification, or deployment of this system or any derivative thereof without explicit written permission from the author is strictly prohibited.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+THE SOFTWARE AND HARDWARE DESIGNS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
