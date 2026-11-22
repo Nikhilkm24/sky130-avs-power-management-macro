@@ -4,9 +4,9 @@
 
 SHELL := /bin/bash
 
-.PHONY: all sim analog synth sta pd post_route_sta layout drc lvs pex model clean help
+.PHONY: all sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model clean help
 
-all: sim analog synth sta pd post_route_sta layout drc lvs pex model
+all: sim analog synth sta pd post_route_sta layout drc lvs pex mixed_signal model
 	@echo "=================================================================="
 	@echo "  All verification, synthesis, PD, layout, and STA completed!     "
 	@echo "=================================================================="
@@ -23,6 +23,7 @@ help:
 	@echo "  make drc            - Run Magic Design Rule Checking on analog layouts"
 	@echo "  make lvs            - Run Netgen LVS comparing layout against schematic"
 	@echo "  make pex            - Run Parasitic Extraction (PEX) & post-layout comparison"
+	@echo "  make mixed_signal   - Run top-level mixed-signal SPICE and closed-loop co-simulation"
 	@echo "  make model          - Run closed-loop co-simulation and generate energy plots"
 	@echo "  make all            - Run complete end-to-end pipeline"
 	@echo "  make clean          - Clean generated waveform files and logs"
@@ -89,6 +90,12 @@ lvs:
 pex:
 	@echo "--> Running Parasitic Extraction (PEX) & comparison..."
 	python3 analog/layout/run_pex.py
+
+mixed_signal:
+	@echo "--> Running Mixed-Signal Top-Level Integration & Co-Simulation..."
+	cd sim && ngspice -b mixed_signal_top.sp
+	python3 sim/run_mixed_signal_co_sim.py
+	@echo "Mixed-signal integration verified: reports/mixed_signal_transient.png."
 
 model:
 	@echo "--> Running closed-loop co-simulation..."
