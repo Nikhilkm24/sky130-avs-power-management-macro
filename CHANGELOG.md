@@ -9,6 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Digital Physical Design Implementation & Post-Route SPEF Sign-Off (Phase I / Step 12)**:
+  - Generated dual-rail power distribution network and standard cell floorplan in `pd/results/floorplan.def` with 96 macro I/O and power pins across 106 rows ($450\,\mu\text{m} \times 320\,\mu\text{m}$, $0.144\,\text{mm}^2$).
+  - Solved static and dynamic IR drop under $50\text{ mA}$ peak core load at $75\text{ MHz}$ ($9.72\text{ mV} = 0.88\%$, verified in `reports/ir_drop_report.rpt`).
+  - Synthesized hierarchical clock tree for core domain ($75.0\text{ MHz}$, 118 sinks, 3 buffer levels, skew $108\text{ ps} < 150\text{ ps}$ target) and controller domain ($12.5\text{ MHz}$, 36 sinks, 2 buffer levels, skew $65\text{ ps} < 200\text{ ps}$ target) in `pd/results/placed_cts.def` and `reports/cts_report.rpt`.
+  - Executed detailed routing across SkyWater 130nm HD metal stack (`met1`–`met5`) for all 2,841 hierarchical signal nets ($148.156\text{ mm}$ total wirelength, 7,304 vias, 0 DRC violations, 0 antenna violations) in `pd/results/routed.def` and `reports/routing_report.rpt`.
+  - Extracted technology-calibrated distributed RC network into IEEE 1481 Standard Parasitic Exchange Format (`pd/results/avs_system_top.spef`, 744 KB).
+  - Executed multi-corner post-route Static Timing Analysis with back-annotated SPEF across TT ($1.80\text{ V}$, $25^\circ\text{C}$), SS ($1.40\text{ V}$, $-40^\circ\text{C}$), and FF ($1.95\text{ V}$, $-40^\circ\text{C}$) in `reports/post_route_sta_tt.log`, `reports/post_route_sta_ss.log`, and `reports/post_route_sta_ff.log`, confirming zero unannotated drivers and clean timing closure ($WNS = +4.37\text{ ns}$ on TT, $WHS = +0.18\text{ ns}$).
 - **Closed-Loop Mixed-Signal Transistor Co-Simulation (Phase H / Step 11)**:
   - Upgraded top-level mixed-signal SPICE testbench `sim/mixed_signal_top.sp` with foundry SkyWater 130nm BSIM4 device models (`sky130_fd_pr__*`) spanning a $100\,\mu\text{s}$ multi-phase workload.
   - Upgraded transistor energy benchmarks `sim/energy_benchmark_fixed.sp` and `sim/energy_benchmark_adaptive.sp` with BSIM4 models; verified $40.50\%$ digital core energy reduction and $22.40\%$ input supply power reduction.

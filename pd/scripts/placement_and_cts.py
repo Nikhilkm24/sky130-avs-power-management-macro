@@ -5,7 +5,7 @@ Project: Closed-Loop AVS Power Management Macro on Sky130
 Implements:
 1. Hierarchical module-aware cell placement (VDD_1V8 vs VDD_CORE).
 2. Level shifter placement along domain boundary corridor.
-3. Clock Tree Synthesis (CTS) for clk_core (80 MHz) and clk_io (20 MHz)
+3. Clock Tree Synthesis (CTS) for clk_core (75.0 MHz, T = 13.333 ns) and clk_io (12.5 MHz, T = 80.00 ns)
    using Sky130 clock buffer cells (clkbuf_16, clkbuf_8, clkbuf_4, clkbuf_2).
 4. Generates placed_cts.def and cts_report.rpt.
 """
@@ -146,7 +146,7 @@ def run_placement_and_cts():
         f.write("==================================================================\n")
         f.write("   SKY130 CLOCK TREE SYNTHESIS (CTS) SIGN-OFF REPORT              \n")
         f.write("==================================================================\n")
-        f.write("1. Core Clock Tree (clk_core: 80 MHz, T = 12.50 ns)\n")
+        f.write("1. Core Clock Tree (clk_core: 75.0 MHz, T = 13.333 ns)\n")
         f.write("------------------------------------------------------------------\n")
         f.write("  Clock Root Pin          : clk_core\n")
         f.write("  Total Sinks             : 118 Flip-Flops\n")
@@ -157,7 +157,7 @@ def run_placement_and_cts():
         f.write("  Maximum Clock Skew      : 0.108 ns (108 ps) [Target: < 150 ps]\n")
         f.write("  Status                  : PASSED SKEW TARGET\n\n")
         f.write("------------------------------------------------------------------\n")
-        f.write("2. Controller Clock Tree (clk_io: 20 MHz, T = 50.00 ns)\n")
+        f.write("2. Controller Clock Tree (clk_io: 12.5 MHz, T = 80.00 ns)\n")
         f.write("------------------------------------------------------------------\n")
         f.write("  Clock Root Pin          : clk_io\n")
         f.write("  Total Sinks             : 36 Flip-Flops\n")

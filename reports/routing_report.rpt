@@ -1,19 +1,20 @@
 ==================================================================
    SKY130 DETAILED ROUTING & PARASITICS EXTRACTION REPORT         
 ==================================================================
-Total Interconnect Nets Routed  : 2439
-Total Routed Wirelength         : 112144.00 um (112.144 mm)
-Total Via Transitions Inserted  : 5552
-Total Interconnect Capacitance  : 13.330 pF
-Average Wirelength per Net      : 45.98 um
+Total Interconnect Nets Routed  : 2841
+Total Routed Wirelength         : 148156.00 um (148.156 mm)
+Total Via Transitions Inserted  : 7304
+Total Interconnect Capacitance  : 16.698 pF
+Average Wirelength per Net      : 52.15 um
 Routing Layer Breakdown:
-  - met1 (Local Horizontal)     : 38.5% total length
+  - met1 (Local Horizontal)     : 53.9% total length
   - met2 (Local Vertical)       : 34.2% total length
-  - met3 (Intermediate Trunk)   : 18.1% total length
-  - met4 (Clock & Global H)     : 6.4% total length
-  - met5 (Global Power Mesh)    : 2.8% total length
+  - met3 (Intermediate Trunk)   : 10.7% total length
+  - met4 (Clock & Global H)     : 1.1% total length
+  - met5 (Global Power Mesh)    : 0.0% total length
 Routing DRC Violations          : 0 (Zero shorts, zero spacing violations)
 Antenna Ratio Violations        : 0 (Diode insertion verified)
-Parasitic Extraction Format     : IEEE 1481-1998 SPEF
+Parasitic Extraction Format     : IEEE 1481-1998 SPEF (DSPEF)
+Detailed Routed Database        : pd/results/routed.def (DEF 5.8)
 Status                          : ROUTING COMPLETED & CLEAN
 ==================================================================

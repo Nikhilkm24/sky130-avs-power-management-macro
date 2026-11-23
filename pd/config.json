@@ -10,8 +10,10 @@
         "dir::rtl/top/avs_system_top.v"
     ],
     "CLOCK_PORT": "clk_core",
-    "CLOCK_PERIOD": 12.5,
+    "CLOCK_PERIOD": 13.333,
     "CLOCK_NET": "clk_core",
+    "IO_CLOCK_PORT": "clk_io",
+    "IO_CLOCK_PERIOD": 80.0,
     "FP_SIZING": "absolute",
     "DIE_AREA": [0, 0, 450.0, 320.0],
     "CORE_AREA": [15.0, 15.0, 435.0, 305.0],

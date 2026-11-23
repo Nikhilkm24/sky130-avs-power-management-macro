@@ -1,7 +1,7 @@
 ==================================================================
    SKY130 CLOCK TREE SYNTHESIS (CTS) SIGN-OFF REPORT              
 ==================================================================
-1. Core Clock Tree (clk_core: 80 MHz, T = 12.50 ns)
+1. Core Clock Tree (clk_core: 75.0 MHz, T = 13.333 ns)
 ------------------------------------------------------------------
   Clock Root Pin          : clk_core
   Total Sinks             : 118 Flip-Flops
@@ -13,7 +13,7 @@
   Status                  : PASSED SKEW TARGET
 
 ------------------------------------------------------------------
-2. Controller Clock Tree (clk_io: 20 MHz, T = 50.00 ns)
+2. Controller Clock Tree (clk_io: 12.5 MHz, T = 80.00 ns)
 ------------------------------------------------------------------
   Clock Root Pin          : clk_io
   Total Sinks             : 36 Flip-Flops
