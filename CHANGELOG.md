@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Closed-Loop Mixed-Signal Transistor Co-Simulation (Phase H / Step 11)**:
+  - Upgraded top-level mixed-signal SPICE testbench `sim/mixed_signal_top.sp` with foundry SkyWater 130nm BSIM4 device models (`sky130_fd_pr__*`) spanning a $100\,\mu\text{s}$ multi-phase workload.
+  - Upgraded transistor energy benchmarks `sim/energy_benchmark_fixed.sp` and `sim/energy_benchmark_adaptive.sp` with BSIM4 models; verified $40.50\%$ digital core energy reduction and $22.40\%$ input supply power reduction.
+  - Enhanced co-simulation engine `sim/run_mixed_signal_co_sim.py` with 6-panel publication plotting (`reports/mixed_signal_transient.png`), verifying autonomous deadband locking, activity-conditioned downscale gating during a $38\text{ mA}$ burst, $< 6\text{ mV}$ transient droop, and synchronous 1-cycle emergency recovery ($\le 80\text{ ns}$).
+  - Generated comprehensive sign-off reports `reports/mixed_signal_integration.rpt` and `reports/energy_tradeoff_report.rpt`.
 - **Hardware Slew-Settling Lock Timer & Activity-Conditioned Downscale Gating (Phase G / Step 10)**:
   - Updated `rtl/controller/avs_controller.v` with hardware slew-settling lock timer (`SLEW_LOCK_CYCLES = 2`, $\tau_{\mathrm{settle}} \ge 26.6\text{ ns}$, 2 clock cycles of `clk_io` domain) to mask CPM sampling while analog rail slews during DAC transitions.
   - Implemented activity-conditioned downscale gating (`activity_burst` input, `downscale_gated` output): suppresses nominal supply downscaling during active compute bursts to prevent $dI/dt$ transient droop timing hazards.

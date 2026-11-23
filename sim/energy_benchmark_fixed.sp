@@ -1,61 +1,64 @@
 * Energy Benchmark: Fixed Worst-Case Ceiling (Code 31, VDD_CORE = 1.50V)
 * Project: Closed-Loop AVS Power Management Macro on Sky130
 * Standard sign-off condition: 75 MHz clock, 1500 operations over 20 us window
+* BSIM4 Foundry Model Sign-Off
 
-.title Energy Benchmark - Fixed Worst-Case Sign-Off (Code 31)
-
-* -------------------------------------------------------------
-* Global Transistor & Diode Models (Sky130 parameters)
-* -------------------------------------------------------------
-.model sky130_nmos NMOS (LEVEL=1 VTO=0.45 KP=180u LAMBDA=0.03 CJ=0.0008 CJSW=0.0003)
-.model sky130_pmos PMOS (LEVEL=1 VTO=-0.50 KP=70u LAMBDA=0.04 CJ=0.0009 CJSW=0.0003)
-.model D_PNP_1X D (IS=1e-16 RS=10 N=1.0)
-.model D_PNP_8X D (IS=8e-16 RS=1.25 N=1.0)
+.title Energy Benchmark - Fixed Worst-Case Sign-Off (Code 31 - BSIM4)
 
 * -------------------------------------------------------------
-* 1. Transistor-Level 1.20V Bandgap Reference Macro
+* Include SkyWater 130nm BSIM4 PDK Models
+* -------------------------------------------------------------
+.lib "../pdk_sky130A/libs.tech/ngspice/sky130.lib.spice" tt
+
+* -------------------------------------------------------------
+* 1. Transistor-Level 1.20V Bandgap Reference Macro (BSIM4)
 * -------------------------------------------------------------
 .subckt bgr_macro vdd vss vref_out
-Mp1 va pbias vdd vdd sky130_pmos W=15u L=1.0u
-Mp2 vb pbias vdd vdd sky130_pmos W=15u L=1.0u
-Mp3 vref_int pbias vdd vdd sky130_pmos W=15u L=1.0u
-D1 va vss D_PNP_1X
+Xp1 va pbias vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+Xp2 vb pbias vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+Xp3 vref_int pbias vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+
+Xpnp1 vss vss va  sky130_fd_pr__pnp_05v5_W3p40L3p40 m=1
 R1 vb vq2 9.0k
-D2 vq2 vss D_PNP_8X
+Xpnp2 vss vss vq2 sky130_fd_pr__pnp_05v5_W3p40L3p40 m=8
+
 R2 vref_int vq3 79.5k
-D3 vq3 vss D_PNP_1X
+Xpnp3 vss vss vq3 sky130_fd_pr__pnp_05v5_W3p40L3p40 m=1
 Cfilter vref_int vss 2p
 
-Mtail v_tail pbias_ota vdd vdd sky130_pmos W=16u L=1.0u
+Xtail v_tail pbias_ota vdd vdd sky130_fd_pr__pfet_01v8 w=16 l=1.0
 Rbias_ota pbias_ota vss 80k
-Mbias_ota pbias_ota pbias_ota vdd vdd sky130_pmos W=16u L=1.0u
-Md1 n1 vb v_tail vdd sky130_pmos W=12u L=0.5u
-Md2 pbias va v_tail vdd sky130_pmos W=12u L=0.5u
-Mn1 n1 n1 vss vss sky130_nmos W=8u L=1.0u
-Mn2 pbias n1 vss vss sky130_nmos W=8u L=1.0u
+Xbias_ota pbias_ota pbias_ota vdd vdd sky130_fd_pr__pfet_01v8 w=16 l=1.0
+
+Xd1 n1 vb v_tail vdd sky130_fd_pr__pfet_01v8 w=12 l=0.5
+Xd2 pbias va v_tail vdd sky130_fd_pr__pfet_01v8 w=12 l=0.5
+
+Xn1 n1 n1 vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
+Xn2 pbias n1 vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
 Cc pbias vss 5p
 
 Rst_pull vdd n_st 1MEG
-Mst_det n_st va vss vss sky130_nmos W=4u L=0.5u
-Mst_inj pbias n_st vss vss sky130_nmos W=1u L=2.0u
+Xst_det n_st va vss vss sky130_fd_pr__nfet_01v8 w=4 l=0.5
+Xst_inj pbias n_st vss vss sky130_fd_pr__nfet_01v8 w=1 l=2.0
 
-M_buf1 n_buf1 vref_out tail_buf vss sky130_nmos W=12u L=0.5u
-M_buf2 n_buf2 vref_int tail_buf vss sky130_nmos W=12u L=0.5u
-Mtail_buf tail_buf nbias_buf vss vss sky130_nmos W=8u L=1.0u
+X_buf1 n_buf1 vref_out tail_buf vss sky130_fd_pr__nfet_01v8 w=12 l=0.5
+X_buf2 n_buf2 vref_int tail_buf vss sky130_fd_pr__nfet_01v8 w=12 l=0.5
+Xtail_buf tail_buf nbias_buf vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
 Rbias_buf vdd nbias_buf 80k
-Mbias_buf nbias_buf nbias_buf vss vss sky130_nmos W=8u L=1.0u
-M_bufl1 n_buf1 n_buf1 vdd vdd sky130_pmos W=15u L=1.0u
-M_bufl2 n_buf2 n_buf1 vdd vdd sky130_pmos W=15u L=1.0u
-M_bufdrv vref_out n_buf2 vdd vdd sky130_pmos W=30u L=0.5u
-M_bufsnk vref_out nbias_buf vss vss sky130_nmos W=12u L=1.0u
+Xbias_buf nbias_buf nbias_buf vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
+X_bufl1 n_buf1 n_buf1 vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+X_bufl2 n_buf2 n_buf1 vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+X_bufdrv vref_out n_buf2 vdd vdd sky130_fd_pr__pfet_01v8 w=30 l=0.5
+X_bufsnk vref_out nbias_buf vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
 C_bufcomp n_buf2 vref_out 5p
 .ends bgr_macro
 
 * -------------------------------------------------------------
-* 2. Physical 32-Resistor String DAC Macro
+* 2. Physical 32-Resistor String DAC Macro (BSIM4)
 * -------------------------------------------------------------
 .subckt dac_macro vref d4 d3 d2 d1 d0 vout vss
 Rbot n0 vss 23.25k
+
 R0  n0  n1  500
 R1  n1  n2  500
 R2  n2  n3  500
@@ -89,38 +92,38 @@ R29 n29 n30 500
 R30 n30 n31 500
 Rtop vref n31 1m
 
-Msw0  vout s0  n0  vss sky130_nmos W=2u L=0.15u
-Msw1  vout s1  n1  vss sky130_nmos W=2u L=0.15u
-Msw2  vout s2  n2  vss sky130_nmos W=2u L=0.15u
-Msw3  vout s3  n3  vss sky130_nmos W=2u L=0.15u
-Msw4  vout s4  n4  vss sky130_nmos W=2u L=0.15u
-Msw5  vout s5  n5  vss sky130_nmos W=2u L=0.15u
-Msw6  vout s6  n6  vss sky130_nmos W=2u L=0.15u
-Msw7  vout s7  n7  vss sky130_nmos W=2u L=0.15u
-Msw8  vout s8  n8  vss sky130_nmos W=2u L=0.15u
-Msw9  vout s9  n9  vss sky130_nmos W=2u L=0.15u
-Msw10 vout s10 n10 vss sky130_nmos W=2u L=0.15u
-Msw11 vout s11 n11 vss sky130_nmos W=2u L=0.15u
-Msw12 vout s12 n12 vss sky130_nmos W=2u L=0.15u
-Msw13 vout s13 n13 vss sky130_nmos W=2u L=0.15u
-Msw14 vout s14 n14 vss sky130_nmos W=2u L=0.15u
-Msw15 vout s15 n15 vss sky130_nmos W=2u L=0.15u
-Msw16 vout s16 n16 vss sky130_nmos W=2u L=0.15u
-Msw17 vout s17 n17 vss sky130_nmos W=2u L=0.15u
-Msw18 vout s18 n18 vss sky130_nmos W=2u L=0.15u
-Msw19 vout s19 n19 vss sky130_nmos W=2u L=0.15u
-Msw20 vout s20 n20 vss sky130_nmos W=2u L=0.15u
-Msw21 vout s21 n21 vss sky130_nmos W=2u L=0.15u
-Msw22 vout s22 n22 vss sky130_nmos W=2u L=0.15u
-Msw23 vout s23 n23 vss sky130_nmos W=2u L=0.15u
-Msw24 vout s24 n24 vss sky130_nmos W=2u L=0.15u
-Msw25 vout s25 n25 vss sky130_nmos W=2u L=0.15u
-Msw26 vout s26 n26 vss sky130_nmos W=2u L=0.15u
-Msw27 vout s27 n27 vss sky130_nmos W=2u L=0.15u
-Msw28 vout s28 n28 vss sky130_nmos W=2u L=0.15u
-Msw29 vout s29 n29 vss sky130_nmos W=2u L=0.15u
-Msw30 vout s30 n30 vss sky130_nmos W=2u L=0.15u
-Msw31 vout s31 n31 vss sky130_nmos W=2u L=0.15u
+Xsw0  vout s0  n0  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw1  vout s1  n1  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw2  vout s2  n2  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw3  vout s3  n3  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw4  vout s4  n4  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw5  vout s5  n5  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw6  vout s6  n6  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw7  vout s7  n7  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw8  vout s8  n8  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw9  vout s9  n9  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw10 vout s10 n10 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw11 vout s11 n11 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw12 vout s12 n12 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw13 vout s13 n13 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw14 vout s14 n14 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw15 vout s15 n15 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw16 vout s16 n16 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw17 vout s17 n17 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw18 vout s18 n18 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw19 vout s19 n19 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw20 vout s20 n20 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw21 vout s21 n21 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw22 vout s22 n22 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw23 vout s23 n23 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw24 vout s24 n24 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw25 vout s25 n25 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw26 vout s26 n26 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw27 vout s27 n27 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw28 vout s28 n28 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw29 vout s29 n29 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw30 vout s30 n30 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw31 vout s31 n31 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
 
 .param vdd_hi=1.8
 Bdec0  s0  vss V = (abs((v(d4)*16+v(d3)*8+v(d2)*4+v(d1)*2+v(d0)) - 0)  < 0.5) ? vdd_hi : 0.0
@@ -161,22 +164,23 @@ Cout  vout vss 100f
 .ends dac_macro
 
 * -------------------------------------------------------------
-* 3. Transistor-Level LDO Regulator Macro
+* 3. Transistor-Level LDO Regulator Macro (BSIM4)
 * -------------------------------------------------------------
 .subckt ldo_macro vdd_in vss vref vdd_core
-M1 n1 vref tail vss sky130_nmos W=20u L=0.5u
-M2 n2 vfb  tail vss sky130_nmos W=20u L=0.5u
-Mtail tail nbias vss vss sky130_nmos W=12u L=1.0u
+X1 n1 vref tail vss sky130_fd_pr__nfet_01v8 w=20 l=0.5
+X2 n2 vfb  tail vss sky130_fd_pr__nfet_01v8 w=20 l=0.5
+Xtail tail nbias vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
 Rbias vdd_in nbias 60k
-Mbias nbias nbias vss vss sky130_nmos W=12u L=1.0u
-M3 n1 n1 vdd_in vdd_in sky130_pmos W=30u L=1.0u
-M4 n2 n1 vdd_in vdd_in sky130_pmos W=30u L=1.0u
-M5 vgate n2 vdd_in vdd_in sky130_pmos W=40u L=0.5u
-M6 vgate nbias vss vss sky130_nmos W=20u L=1.0u
+Xbias nbias nbias vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
+
+X3 n1 n1 vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=30 l=1.0
+X4 n2 n1 vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=30 l=1.0
+X5 vgate n2 vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=40 l=0.5
+X6 vgate nbias vss vss sky130_fd_pr__nfet_01v8 w=20 l=1.0
 Rcomp vgate n_comp 3.6k
 Ccomp n_comp n2 22.0p
 
-Mpass vdd_core vgate vdd_in vdd_in sky130_pmos W=2000u L=0.15u
+Xpass vdd_core vgate vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=10 l=0.15 m=200
 
 Ra vdd_core vfb 25k
 Rb vfb vss 100k
@@ -217,7 +221,6 @@ let p_supply = 1.80 * i_supply
 let i_core = i(vsense_core)
 let p_core = v(vdd_core) * i_core
 
-* Integrate total electrical energy over 20 us window (1500 clock cycles @ 75 MHz)
 meas tran e_supply_fixed INTEG p_supply FROM=5u TO=25u
 meas tran e_core_fixed INTEG p_core FROM=5u TO=25u
 
@@ -226,7 +229,7 @@ let e_op_supply = e_supply_fixed / 1500.0
 let e_op_core = e_core_fixed / 1500.0
 
 echo "=========================================================="
-echo "   BENCHMARK RUN: FIXED WORST-CASE CEILING (CODE 31)     "
+echo "   BENCHMARK RUN: FIXED WORST-CASE CEILING (CODE 31 - BSIM4) "
 echo "=========================================================="
 print e_supply_fixed
 print e_core_fixed

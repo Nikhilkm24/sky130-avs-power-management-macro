@@ -1,70 +1,68 @@
 * Mixed-Signal Top-Level Integration Netlist: AVS Power Management Macro on Sky130
 * Interfaces Transistor-Level Analog Power Macro (BGR + 32-R DAC + LDO) with Digital Core Load
 * Supply: VDD_1V8 = 1.8V, Regulated VDD_CORE = 0.90V to 1.50V
+* Phase H: Full SkyWater 130nm BSIM4 Foundry Models over 100 us Multi-Phase Transient
 
-.title Mixed-Signal Closed-Loop AVS Power Management Macro
-
-* -------------------------------------------------------------
-* Global Transistor & Diode Models (Sky130 parameters)
-* -------------------------------------------------------------
-.model sky130_nmos NMOS (LEVEL=1 VTO=0.45 KP=180u LAMBDA=0.03 CJ=0.0008 CJSW=0.0003)
-.model sky130_pmos PMOS (LEVEL=1 VTO=-0.50 KP=70u LAMBDA=0.04 CJ=0.0009 CJSW=0.0003)
-.model D_PNP_1X D (IS=1e-16 RS=10 N=1.0)
-.model D_PNP_8X D (IS=8e-16 RS=1.25 N=1.0)
+.title Mixed-Signal Closed-Loop AVS Power Management Macro (BSIM4 Sign-Off)
 
 * -------------------------------------------------------------
-* 1. Transistor-Level 1.20V Bandgap Reference Macro
+* Include SkyWater 130nm BSIM4 PDK Models
+* -------------------------------------------------------------
+.lib "../pdk_sky130A/libs.tech/ngspice/sky130.lib.spice" tt
+
+* -------------------------------------------------------------
+* 1. Transistor-Level 1.20V Bandgap Reference Macro (BSIM4)
 * -------------------------------------------------------------
 .subckt bgr_macro vdd vss vref_out
 * PMOS Current Mirror Pair (M1, M2)
-Mp1 va pbias vdd vdd sky130_pmos W=15u L=1.0u
-Mp2 vb pbias vdd vdd sky130_pmos W=15u L=1.0u
+Xp1 va pbias vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+Xp2 vb pbias vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
 
 * PMOS Output Current Branch (M3)
-Mp3 vref_int pbias vdd vdd sky130_pmos W=15u L=1.0u
+Xp3 vref_int pbias vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
 
-* Core BJT / Diode branches
-D1 va vss D_PNP_1X
+* Core BJT / Diode branches (Sky130 PNP substrate transistor: Collector Base Emitter)
+Xpnp1 vss vss va  sky130_fd_pr__pnp_05v5_W3p40L3p40 m=1
 R1 vb vq2 9.0k
-D2 vq2 vss D_PNP_8X
+Xpnp2 vss vss vq2 sky130_fd_pr__pnp_05v5_W3p40L3p40 m=8
 
 * Output branch: Summing resistor R2 + Diode D3 for 1.200V output
 R2 vref_int vq3 79.5k
-D3 vq3 vss D_PNP_1X
+Xpnp3 vss vss vq3 sky130_fd_pr__pnp_05v5_W3p40L3p40 m=1
 Cfilter vref_int vss 2p
 
 * PMOS Differential Input OTA Error Amplifier
-Mtail v_tail pbias_ota vdd vdd sky130_pmos W=16u L=1.0u
+Xtail v_tail pbias_ota vdd vdd sky130_fd_pr__pfet_01v8 w=16 l=1.0
 Rbias_ota pbias_ota vss 80k
-Mbias_ota pbias_ota pbias_ota vdd vdd sky130_pmos W=16u L=1.0u
+Xbias_ota pbias_ota pbias_ota vdd vdd sky130_fd_pr__pfet_01v8 w=16 l=1.0
 
-Md1 n1 vb v_tail vdd sky130_pmos W=12u L=0.5u
-Md2 pbias va v_tail vdd sky130_pmos W=12u L=0.5u
+Xd1 n1 vb v_tail vdd sky130_fd_pr__pfet_01v8 w=12 l=0.5
+Xd2 pbias va v_tail vdd sky130_fd_pr__pfet_01v8 w=12 l=0.5
 
-Mn1 n1 n1 vss vss sky130_nmos W=8u L=1.0u
-Mn2 pbias n1 vss vss sky130_nmos W=8u L=1.0u
+Xn1 n1 n1 vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
+Xn2 pbias n1 vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
 Cc pbias vss 5p
 
 * Self-Extinguishing Startup Circuit
 Rst_pull vdd n_st 1MEG
-Mst_det n_st va vss vss sky130_nmos W=4u L=0.5u
-Mst_inj pbias n_st vss vss sky130_nmos W=1u L=2.0u
+Xst_det n_st va vss vss sky130_fd_pr__nfet_01v8 w=4 l=0.5
+Xst_inj pbias n_st vss vss sky130_fd_pr__nfet_01v8 w=1 l=2.0
 
 * Transistor-Level Unity-Gain Output Buffer (Drives DAC resistor ladder)
-M_buf1 n_buf1 vref_out tail_buf vss sky130_nmos W=12u L=0.5u
-M_buf2 n_buf2 vref_int tail_buf vss sky130_nmos W=12u L=0.5u
-Mtail_buf tail_buf nbias_buf vss vss sky130_nmos W=8u L=1.0u
+X_buf1 n_buf1 vref_out tail_buf vss sky130_fd_pr__nfet_01v8 w=12 l=0.5
+X_buf2 n_buf2 vref_int tail_buf vss sky130_fd_pr__nfet_01v8 w=12 l=0.5
+Xtail_buf tail_buf nbias_buf vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
 Rbias_buf vdd nbias_buf 80k
-Mbias_buf nbias_buf nbias_buf vss vss sky130_nmos W=8u L=1.0u
-M_bufl1 n_buf1 n_buf1 vdd vdd sky130_pmos W=15u L=1.0u
-M_bufl2 n_buf2 n_buf1 vdd vdd sky130_pmos W=15u L=1.0u
-M_bufdrv vref_out n_buf2 vdd vdd sky130_pmos W=30u L=0.5u
-M_bufsnk vref_out nbias_buf vss vss sky130_nmos W=12u L=1.0u
+Xbias_buf nbias_buf nbias_buf vss vss sky130_fd_pr__nfet_01v8 w=8 l=1.0
+X_bufl1 n_buf1 n_buf1 vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+X_bufl2 n_buf2 n_buf1 vdd vdd sky130_fd_pr__pfet_01v8 w=15 l=1.0
+X_bufdrv vref_out n_buf2 vdd vdd sky130_fd_pr__pfet_01v8 w=30 l=0.5
+X_bufsnk vref_out nbias_buf vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
 C_bufcomp n_buf2 vref_out 5p
 .ends bgr_macro
 
 * -------------------------------------------------------------
-* 2. Physical 32-Resistor String DAC Macro
+* 2. Physical 32-Resistor String DAC Macro (BSIM4)
 * -------------------------------------------------------------
 .subckt dac_macro vref d4 d3 d2 d1 d0 vout vss
 * Bottom offset resistor setting tap0 to 0.720V
@@ -104,39 +102,39 @@ R29 n29 n30 500
 R30 n30 n31 500
 Rtop vref n31 1m
 
-* 32 Selection Switches
-Msw0  vout s0  n0  vss sky130_nmos W=2u L=0.15u
-Msw1  vout s1  n1  vss sky130_nmos W=2u L=0.15u
-Msw2  vout s2  n2  vss sky130_nmos W=2u L=0.15u
-Msw3  vout s3  n3  vss sky130_nmos W=2u L=0.15u
-Msw4  vout s4  n4  vss sky130_nmos W=2u L=0.15u
-Msw5  vout s5  n5  vss sky130_nmos W=2u L=0.15u
-Msw6  vout s6  n6  vss sky130_nmos W=2u L=0.15u
-Msw7  vout s7  n7  vss sky130_nmos W=2u L=0.15u
-Msw8  vout s8  n8  vss sky130_nmos W=2u L=0.15u
-Msw9  vout s9  n9  vss sky130_nmos W=2u L=0.15u
-Msw10 vout s10 n10 vss sky130_nmos W=2u L=0.15u
-Msw11 vout s11 n11 vss sky130_nmos W=2u L=0.15u
-Msw12 vout s12 n12 vss sky130_nmos W=2u L=0.15u
-Msw13 vout s13 n13 vss sky130_nmos W=2u L=0.15u
-Msw14 vout s14 n14 vss sky130_nmos W=2u L=0.15u
-Msw15 vout s15 n15 vss sky130_nmos W=2u L=0.15u
-Msw16 vout s16 n16 vss sky130_nmos W=2u L=0.15u
-Msw17 vout s17 n17 vss sky130_nmos W=2u L=0.15u
-Msw18 vout s18 n18 vss sky130_nmos W=2u L=0.15u
-Msw19 vout s19 n19 vss sky130_nmos W=2u L=0.15u
-Msw20 vout s20 n20 vss sky130_nmos W=2u L=0.15u
-Msw21 vout s21 n21 vss sky130_nmos W=2u L=0.15u
-Msw22 vout s22 n22 vss sky130_nmos W=2u L=0.15u
-Msw23 vout s23 n23 vss sky130_nmos W=2u L=0.15u
-Msw24 vout s24 n24 vss sky130_nmos W=2u L=0.15u
-Msw25 vout s25 n25 vss sky130_nmos W=2u L=0.15u
-Msw26 vout s26 n26 vss sky130_nmos W=2u L=0.15u
-Msw27 vout s27 n27 vss sky130_nmos W=2u L=0.15u
-Msw28 vout s28 n28 vss sky130_nmos W=2u L=0.15u
-Msw29 vout s29 n29 vss sky130_nmos W=2u L=0.15u
-Msw30 vout s30 n30 vss sky130_nmos W=2u L=0.15u
-Msw31 vout s31 n31 vss sky130_nmos W=2u L=0.15u
+* 32 NMOS Selection Switches (BSIM4 sky130_fd_pr__nfet_01v8, W=2u, L=0.15u)
+Xsw0  vout s0  n0  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw1  vout s1  n1  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw2  vout s2  n2  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw3  vout s3  n3  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw4  vout s4  n4  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw5  vout s5  n5  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw6  vout s6  n6  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw7  vout s7  n7  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw8  vout s8  n8  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw9  vout s9  n9  vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw10 vout s10 n10 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw11 vout s11 n11 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw12 vout s12 n12 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw13 vout s13 n13 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw14 vout s14 n14 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw15 vout s15 n15 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw16 vout s16 n16 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw17 vout s17 n17 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw18 vout s18 n18 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw19 vout s19 n19 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw20 vout s20 n20 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw21 vout s21 n21 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw22 vout s22 n22 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw23 vout s23 n23 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw24 vout s24 n24 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw25 vout s25 n25 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw26 vout s26 n26 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw27 vout s27 n27 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw28 vout s28 n28 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw29 vout s29 n29 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw30 vout s30 n30 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
+Xsw31 vout s31 n31 vss sky130_fd_pr__nfet_01v8 w=2 l=0.15
 
 * Decoder Logic
 .param vdd_hi=1.8
@@ -178,24 +176,25 @@ Cout  vout vss 100f
 .ends dac_macro
 
 * -------------------------------------------------------------
-* 3. Transistor-Level LDO Regulator Macro
+* 3. Transistor-Level LDO Regulator Macro (BSIM4)
 * -------------------------------------------------------------
 .subckt ldo_macro vdd_in vss vref vdd_core
-* Error Amplifier
-M1 n1 vref tail vss sky130_nmos W=20u L=0.5u
-M2 n2 vfb  tail vss sky130_nmos W=20u L=0.5u
-Mtail tail nbias vss vss sky130_nmos W=12u L=1.0u
+* Error Amplifier Differential Pair & Current Mirrors
+X1 n1 vref tail vss sky130_fd_pr__nfet_01v8 w=20 l=0.5
+X2 n2 vfb  tail vss sky130_fd_pr__nfet_01v8 w=20 l=0.5
+Xtail tail nbias vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
 Rbias vdd_in nbias 60k
-Mbias nbias nbias vss vss sky130_nmos W=12u L=1.0u
-M3 n1 n1 vdd_in vdd_in sky130_pmos W=30u L=1.0u
-M4 n2 n1 vdd_in vdd_in sky130_pmos W=30u L=1.0u
-M5 vgate n2 vdd_in vdd_in sky130_pmos W=40u L=0.5u
-M6 vgate nbias vss vss sky130_nmos W=20u L=1.0u
+Xbias nbias nbias vss vss sky130_fd_pr__nfet_01v8 w=12 l=1.0
+
+X3 n1 n1 vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=30 l=1.0
+X4 n2 n1 vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=30 l=1.0
+X5 vgate n2 vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=40 l=0.5
+X6 vgate nbias vss vss sky130_fd_pr__nfet_01v8 w=20 l=1.0
 Rcomp vgate n_comp 3.6k
 Ccomp n_comp n2 22.0p
 
-* Pass transistor
-Mpass vdd_core vgate vdd_in vdd_in sky130_pmos W=2000u L=0.15u
+* Pass transistor (W/L = 2000u / 0.15u, 200 fingers of 10u)
+Xpass vdd_core vgate vdd_in vdd_in sky130_fd_pr__pfet_01v8 w=10 l=0.15 m=200
 
 * Feedback divider (Gain = 1 + 25k/100k = 1.25)
 Ra vdd_core vfb 25k
@@ -216,25 +215,25 @@ Xbgr vdd 0 vbgr bgr_macro
 Xdac vbgr d4 d3 d2 d1 d0 vref_dac 0 dac_macro
 Xldo vdd 0 vref_dac vdd_core ldo_macro
 
-* Digital Control Code Word Signals (Sweeping from code 31 down to code 8)
-Vd4 d4 0 PWL(0u 1  12u 1  20u 0  35u 0  48u 0)
-Vd3 d3 0 PWL(0u 1  12u 1  20u 1  35u 1  48u 1)
-Vd2 d2 0 PWL(0u 1  12u 0  20u 0  35u 0  48u 0)
-Vd1 d1 0 PWL(0u 1  12u 1  20u 0  35u 0  48u 0)
-Vd0 d0 0 PWL(0u 1  12u 0  20u 0  35u 0  48u 0)
+* Digital Control Code Word Signals (Sweeping across 100 us: Code 31 -> 18 -> 8 -> 31 -> 8)
+Vd4 d4 0 PWL(0u 1  15u 1  30u 0  65u 0  72u 1  85u 0  100u 0)
+Vd3 d3 0 PWL(0u 1  15u 0  30u 1  65u 1  72u 1  85u 1  100u 1)
+Vd2 d2 0 PWL(0u 1  15u 0  30u 0  65u 0  72u 1  85u 0  100u 0)
+Vd1 d1 0 PWL(0u 1  15u 1  30u 0  65u 0  72u 1  85u 0  100u 0)
+Vd0 d0 0 PWL(0u 1  15u 0  30u 0  65u 0  72u 1  85u 0  100u 0)
 
-* Dynamic Digital Load Current: 5mA idle with 33mA high-activity compute step at 24us
-I_digital_load vdd_core 0 PULSE(5m 38m 24u 20n 20n 14u 60u)
+* Dynamic Digital Load Current: 5mA idle with 38mA dynamic compute burst from 40us to 60us
+I_digital_load vdd_core 0 PULSE(5m 38m 40u 20n 20n 20u 100u)
 
 * -------------------------------------------------------------
 * Simulation Controls
 * -------------------------------------------------------------
 .control
 echo "=========================================================="
-echo "Running Transistor-Level Mixed-Signal Integration in ngspice"
+echo "Running BSIM4 Transistor-Level Mixed-Signal Co-Sim (100 us)"
 echo "=========================================================="
 
-tran 10n 55u
+tran 20n 100u
 let i_supply = -vdd1v8#branch
 let p_supply = 1.80 * i_supply
 wrdata mixed_signal_top_transient.data v(vdd_core) v(vref_dac) v(vbgr) i_supply p_supply
@@ -244,7 +243,7 @@ print v(vbgr)[100]
 echo "Core Voltage at Boot (Code 31):"
 print v(vdd_core)[100]
 echo "Core Voltage Scaled (Code 8):"
-print v(vdd_core)[3000]
+print v(vdd_core)[2500]
 
 echo "Transistor-Level Mixed-Signal Simulation Completed Successfully."
 .endc

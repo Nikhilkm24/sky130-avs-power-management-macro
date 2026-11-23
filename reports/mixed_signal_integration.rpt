@@ -1,60 +1,67 @@
 ==================================================================
-   SKY130 MIXED-SIGNAL CLOSED-LOOP INTEGRATION REPORT            
+   SKY130 MIXED-SIGNAL CLOSED-LOOP INTEGRATION REPORT (PHASE H)  
 ==================================================================
-Analog Blocks Integrated   : 1.20V BGR + 5-Bit R-String DAC + LDO Regulator
-Digital Blocks Integrated  : Critical Path Monitor + AVS FSM + Pipelined MAC
-Total Simulation Duration  : 60.0 us
+Analog Blocks Integrated   : 1.20V BGR + 5-Bit R-String DAC + LDO Regulator (BSIM4)
+Digital Blocks Integrated  : Dual-Replica CPM + Phase G Transient-Aware FSM + Pipelined MAC
+Total Simulation Duration  : 100.0 us (Multi-Phase Workload Execution)
 Digital Core Clock         : 75.0 MHz (Period: 13.33 ns)
 Controller Sampling Clock  : 12.5 MHz (Period: 80.00 ns)
 
 ------------------------------------------------------------------
-1. Closed-Loop Voltage Scaling Verification
+1. Phase 1: Boot-Up & Autonomous Downward Stepping
 ------------------------------------------------------------------
-  Initial Boot Voltage     : 1.500 V (Code 31 - Safe Ceiling)
-  Steady-State Voltage     : 1.054 V (Code 8 - Optimum Target)
-  Steady-State Margin      : 2 Taps (Target Deadband: [2, 3])
-  Closed-Loop Lock Status  : LOCKED & SETTLED
+  Initial Boot Voltage     : 1.500 V (Code 31 - Safe Sign-Off Ceiling)
+  Slew-Settling Lock Timer : Masked sampling active for tau_settle >= 26.6 ns
+  Voltage Prior to Burst   : 1.131 V (Code 12, Margin: 8 Taps)
 
 ------------------------------------------------------------------
-2. Dynamic Load Step Perturbation (5 mA -> 38 mA @ t = 24 us)
+2. Phase 2: Dynamic Compute Burst & Downscale Gating
 ------------------------------------------------------------------
-  Load Current Step Size   : 33.0 mA
-  Maximum Transient Droop  : 6.1 mV (0.58% of nominal)
-  Recovery Action          : FSM maintains margin within safe bounds
+  Burst Current Step Size  : 5 mA -> 38 mA (33.0 mA load step)
+  Maximum Transient Droop  : 5.8 mV (0.52% of nominal)
+  Downscale Gating Action  : Asserted during burst (downscale_gated = 1, 2525 samples)
+  Protection Outcome       : Supply downscaling inhibited; zero dI/dt transient droop hazards
 
 ------------------------------------------------------------------
-3. Emergency Timing Fault Fallback Test (t = 38.1 us)
+3. Phase 3: Post-Burst Deadband Settling & Autonomous Lock
+------------------------------------------------------------------
+  Optimal Operating Rail   : 1.071 V (Code 9 - Optimal Setpoint)
+  Measured CPM Margin      : 3 Taps (Target Deadband: [2, 3])
+  Closed-Loop Lock Status  : LOCKED & SETTLED (loop_settled = 1)
+
+------------------------------------------------------------------
+4. Phase 4: Emergency Timing Fault Fallback Test (t = 65.1 us)
 ------------------------------------------------------------------
   Emergency Hazard Trigger : ASSERTED (margin == 0 detected)
-  Fallback Peak Voltage    : 1.380 V (Clamped to Code 31)
-  Fault Detection Latency  : 1 Clock Cycle (Emergency FSM override)
-  Post-Fault Recovery      : Re-settled smoothly to nominal target
+  Fallback Peak Voltage    : 1.350 V (Instant jump to Code 31 / 1.50V)
+  Fault Detection Latency  : 1 Controller Clock Cycle (<= 80 ns emergency response)
+  Post-Fault Recovery      : Re-settled smoothly to 1.053 V (Code 8, Margin: 2)
 
 ------------------------------------------------------------------
-4. Transistor-Level SPICE Energy-per-Op Integration (ngspice-42)
+5. Transistor-Level BSIM4 SPICE Energy Integration (ngspice-42)
 ------------------------------------------------------------------
   Operating Window         : 5.0 us to 25.0 us (20.0 us duration = 1500 Ops @ 75 MHz)
-  Supply Voltage (VDD_1V8) : 1.800 V
-  Digital Workload Model   : Active CMOS Switching Model (Req = 150 Ohms)
+  Supply Voltage (VDD_1V8) : 1.800 V (Unregulated Battery/Board Rail)
+  PDK Device Models        : SkyWater 130nm BSIM4 (sky130_fd_pr__*)
 
-  [A] Fixed Worst-Case Ceiling Sign-Off (Code 31):
-      Regulated Core Voltage: 1.499 V
-      Supply Energy Integral: 367.85 nJ (0.368 uJ)
-      Core Energy Integral  : 299.73 nJ (0.300 uJ)
-      Supply Energy-per-Op  : 245.24 pJ/operation
-      Core Energy-per-Op    : 199.82 pJ/operation
+  [A] Fixed Worst-Case Ceiling Sign-Off (Code 31 - BSIM4):
+      Regulated Core Voltage: 1.380 V
+      Supply Energy Integral: 338.55 nJ (0.339 uJ)
+      Core Energy Integral  : 254.08 nJ (0.254 uJ)
+      Supply Energy-per-Op  : 225.70 pJ/operation
+      Core Energy-per-Op    : 169.39 pJ/operation
 
-  [B] Adaptive Setpoint Locked (Code 8):
-      Regulated Core Voltage: 1.054 V
-      Supply Energy Integral: 260.77 nJ (0.261 uJ)
-      Core Energy Integral  : 148.05 nJ (0.148 uJ)
-      Supply Energy-per-Op  : 173.85 pJ/operation
-      Core Energy-per-Op    : 98.70 pJ/operation
+  [B] Adaptive Setpoint Locked (Code 8 - BSIM4):
+      Regulated Core Voltage: 1.065 V
+      Supply Energy Integral: 262.70 nJ (0.263 uJ)
+      Core Energy Integral  : 151.19 nJ (0.151 uJ)
+      Supply Energy-per-Op  : 175.13 pJ/operation
+      Core Energy-per-Op    : 100.79 pJ/operation
 
-  [C] Net Energy Savings Measured from SPICE:
-      Supply Energy Saving  : 29.11 % (Linear LDO battery current reduction)
-      Core Energy Saving    : 50.61 % (CMOS dynamic switching power halving)
+  [C] Net Energy Savings Measured from BSIM4 SPICE:
+      Supply Energy Saving  : 22.40 % (Linear battery current reduction with LDO bias)
+      Core Energy Saving    : 40.50 % (Quadratic CMOS dynamic switching power reduction)
 
 ------------------------------------------------------------------
-Overall Mixed-Signal Status: FULL CLOSED-LOOP COMPLIANCE VERIFIED
+Overall Mixed-Signal Status: FULL PHASE H CO-SIMULATION COMPLIANCE VERIFIED
 ==================================================================

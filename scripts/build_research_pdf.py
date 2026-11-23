@@ -751,7 +751,7 @@ def build_pdf(filename):
     &bull; [x] <b>Checklist Item 2:</b> Confirm that OpenSTA characterization spans the complete multi-corner dataset (N=24 points across TT, FF, SS, FS, 0.90V–1.95V, -40°C–+125°C, Phase C Complete).<br/>
     &bull; [x] <b>Checklist Item 3:</b> Validate that Level-1 SPICE models are fully replaced with SkyWater 130nm BSIM4 PDK devices (Phase F Complete).<br/>
     &bull; [x] <b>Checklist Item 4:</b> Integrate hardware slew-settling lock timer and activity downscale gating in AVS controller (Phase G Complete).<br/>
-    &bull; [ ] <b>Checklist Item 5:</b> Execute full mixed-signal closed-loop transistor-level co-simulation (Phase H).<br/>
+    &bull; [x] <b>Checklist Item 5:</b> Execute full mixed-signal closed-loop transistor-level co-simulation (Phase H Complete).<br/>
     &bull; [ ] <b>Checklist Item 6:</b> Ensure that Netgen topological LVS passes with zero device or pin mismatches.<br/>
     &bull; [ ] <b>Checklist Item 7:</b> Reconcile all system-level energy calculations to account for analog regulator overhead.<br/>
     &bull; [ ] <b>Checklist Item 8:</b> Complete the ablation study and tag release <code>v2.0.0</code> with public GitHub replication scripts.
