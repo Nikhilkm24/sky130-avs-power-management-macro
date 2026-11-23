@@ -1,12 +1,15 @@
 // ==============================================================================
 // Module: avs_controller.v
 // Project: Closed-Loop AVS Power Management Macro on Sky130
-// Description: Closed-Loop Adaptive Voltage Scaling 6-State FSM Controller.
+// Description: Transient-Aware Closed-Loop AVS 6-State FSM Controller (Phase G).
 //              Features:
 //              - 6-State FSM: ST_RESET, ST_WAIT_SETTLE, ST_SAMPLE,
 //                ST_EVALUATE, ST_UPDATE_STEP, ST_EMERGENCY.
+//              - Hardware Slew-Settling Lock Timer (tau_settle >= 26.6 ns, 2 cycles of clk_ctrl)
+//                masking CPM sampling while analog rail slews during DAC code transitions.
+//              - Activity-Conditioned Downscale Gating: Inhibits voltage reduction
+//                during active compute bursts to eliminate dI/dt transient droop hazards.
 //              - Rate-limited stepping (max +/- 1 LSB per update interval)
-//              - Settling-time timer (waits for analog LDO transient before sampling)
 //              - Configurable hysteresis window to prevent limit-cycle hunting
 //              - Programmable floor (0.90V) and ceiling (1.50V) safety clamping
 //              - Synchronous emergency override: Evaluated on every rising edge of
@@ -16,22 +19,26 @@
 `timescale 1ns / 1ps
 
 module avs_controller #(
-    parameter integer CODE_WIDTH       = 5,
-    parameter integer MARGIN_WIDTH     = 4,
-    parameter integer SETTLE_CYCLES    = 16,
-    parameter [CODE_WIDTH-1:0] V_MIN   = 5'd0,   // 0.90V
-    parameter [CODE_WIDTH-1:0] V_MAX   = 5'd31,  // 1.50V (Safe Sign-Off Ceiling)
-    parameter [CODE_WIDTH-1:0] V_INIT  = 5'd31   // Boot at maximum safe voltage
+    parameter integer CODE_WIDTH        = 5,
+    parameter integer MARGIN_WIDTH      = 4,
+    parameter integer SLEW_LOCK_CYCLES  = 2,    // Slew lock timer: >= 26.6 ns (2 cycles at 12.5 MHz = 160 ns)
+    parameter integer SETTLE_CYCLES     = 16,   // Total analog settling time before next sample
+    parameter [CODE_WIDTH-1:0] V_MIN    = 5'd0,  // 0.90V
+    parameter [CODE_WIDTH-1:0] V_MAX    = 5'd31, // 1.50V (Safe Sign-Off Ceiling)
+    parameter [CODE_WIDTH-1:0] V_INIT   = 5'd31  // Boot at maximum safe voltage
 )(
     input  wire                    clk_ctrl,        // 10 - 25 MHz controller clock
     input  wire                    rst_n,           // Asynchronous active-low reset
     input  wire                    avs_enable,      // 1 = Enable closed loop, 0 = Manual
+    input  wire                    activity_burst,  // 1 = Active compute burst, downscaling gated
     input  wire [CODE_WIDTH-1:0]   manual_code,     // Voltage code in manual mode
     input  wire [MARGIN_WIDTH-1:0] target_margin,   // Target guard-band (default = 2 taps)
     input  wire [MARGIN_WIDTH-1:0] margin_code_in,  // Synchronized CPM margin code
     output reg  [CODE_WIDTH-1:0]   v_code,          // Output code to 5-bit Reference DAC
     output reg                     timing_hazard,   // Emergency hazard alarm
     output reg                     settled,         // Asserted when within target deadband
+    output reg                     slew_locked,     // Asserted during analog rail voltage transition
+    output reg                     downscale_gated, // Asserted when downscaling suppressed by burst
     output reg  [2:0]              fsm_state        // Exposed FSM state for observability
 );
 
@@ -45,6 +52,7 @@ module avs_controller #(
         ST_EMERGENCY   = 3'd5;
 
     reg [7:0] settle_counter;
+    reg [3:0] slew_counter;
     reg [MARGIN_WIDTH-1:0] sampled_margin;
 
     // --------------------------------------------------------------------------
@@ -52,17 +60,22 @@ module avs_controller #(
     // --------------------------------------------------------------------------
     always @(posedge clk_ctrl or negedge rst_n) begin
         if (!rst_n) begin
-            fsm_state      <= ST_RESET;
-            v_code         <= V_INIT;
-            timing_hazard  <= 1'b0;
-            settled        <= 1'b0;
-            settle_counter <= 8'd0;
-            sampled_margin <= {MARGIN_WIDTH{1'b0}};
+            fsm_state       <= ST_RESET;
+            v_code          <= V_INIT;
+            timing_hazard   <= 1'b0;
+            settled         <= 1'b0;
+            slew_locked     <= 1'b1;
+            downscale_gated <= 1'b0;
+            settle_counter  <= 8'd0;
+            slew_counter    <= 4'd0;
+            sampled_margin  <= {MARGIN_WIDTH{1'b0}};
         end else if (!avs_enable) begin
             // Manual Override Mode: directly pass manual code bounded by safety limits
-            fsm_state      <= ST_RESET;
-            settled        <= 1'b1;
-            timing_hazard  <= 1'b0;
+            fsm_state       <= ST_RESET;
+            settled         <= 1'b1;
+            timing_hazard   <= 1'b0;
+            slew_locked     <= 1'b0;
+            downscale_gated <= 1'b0;
             if (manual_code > V_MAX)
                 v_code <= V_MAX;
             else if (manual_code < V_MIN)
@@ -72,23 +85,37 @@ module avs_controller #(
         end else if (margin_code_in == {MARGIN_WIDTH{1'b0}} && fsm_state != ST_RESET) begin
             // IMMEDIATE CRITICAL INTERRUPT: Timing margin is ZERO!
             // Instantly override state machine, restore maximum voltage, assert alarm
-            fsm_state      <= ST_EMERGENCY;
-            v_code         <= V_MAX;
-            timing_hazard  <= 1'b1;
-            settled        <= 1'b0;
-            settle_counter <= 8'd0;
+            fsm_state       <= ST_EMERGENCY;
+            v_code          <= V_MAX;
+            timing_hazard   <= 1'b1;
+            settled         <= 1'b0;
+            slew_locked     <= 1'b1;
+            downscale_gated <= 1'b0;
+            settle_counter  <= 8'd0;
+            slew_counter    <= 4'd0;
         end else begin
             case (fsm_state)
                 ST_RESET: begin
-                    v_code         <= V_INIT;
-                    timing_hazard  <= 1'b0;
-                    settled        <= 1'b0;
-                    settle_counter <= 8'd0;
-                    fsm_state      <= ST_WAIT_SETTLE;
+                    v_code          <= V_INIT;
+                    timing_hazard   <= 1'b0;
+                    settled         <= 1'b0;
+                    slew_locked     <= 1'b1;
+                    downscale_gated <= 1'b0;
+                    settle_counter  <= 8'd0;
+                    slew_counter    <= 4'd0;
+                    fsm_state       <= ST_WAIT_SETTLE;
                 end
 
                 ST_WAIT_SETTLE: begin
-                    // Wait for LDO analog output to settle after step adjustment
+                    // Hardware Slew-Settling Lock Timer (tau_settle >= 26.6 ns)
+                    if (slew_counter < SLEW_LOCK_CYCLES) begin
+                        slew_counter <= slew_counter + 4'd1;
+                        slew_locked  <= 1'b1;
+                    end else begin
+                        slew_locked  <= 1'b0;
+                    end
+
+                    // Wait for LDO analog output to fully settle after step adjustment
                     if (settle_counter >= SETTLE_CYCLES) begin
                         settle_counter <= 8'd0;
                         fsm_state      <= ST_SAMPLE;
@@ -98,9 +125,14 @@ module avs_controller #(
                 end
 
                 ST_SAMPLE: begin
-                    // Capture current synchronized CPM timing margin
-                    sampled_margin <= margin_code_in;
-                    fsm_state      <= ST_EVALUATE;
+                    // If slew lock is somehow still asserted, stay in wait settle
+                    if (slew_locked) begin
+                        fsm_state <= ST_WAIT_SETTLE;
+                    end else begin
+                        // Capture current synchronized CPM timing margin
+                        sampled_margin <= margin_code_in;
+                        fsm_state      <= ST_EVALUATE;
+                    end
                 end
 
                 ST_EVALUATE: begin
@@ -108,38 +140,57 @@ module avs_controller #(
                     // Target Window: [target_margin, target_margin + 1]
                     if (sampled_margin < target_margin) begin
                         // Insufficient timing margin: Must step UP voltage (+1 LSB code)
-                        settled <= 1'b0;
+                        // Up-stepping is NEVER gated (safety takes absolute precedence)
+                        settled         <= 1'b0;
+                        downscale_gated <= 1'b0;
                         if (v_code < V_MAX) begin
                             v_code <= v_code + 1'b1;
                         end
                         fsm_state <= ST_UPDATE_STEP;
                     end else if (sampled_margin > (target_margin + 4'd1)) begin
-                        // Excess timing margin (over-designed): Step DOWN voltage (-1 LSB code)
-                        settled <= 1'b0;
-                        if (v_code > V_MIN) begin
-                            v_code <= v_code - 1'b1;
+                        // Excess timing margin detected: evaluate activity-conditioned downscale gating
+                        if (activity_burst) begin
+                            // WORKLOAD ACTIVITY GATING:
+                            // Inhibit downscaling during active compute bursts to prevent dI/dt droop violations!
+                            downscale_gated <= 1'b1;
+                            settled         <= 1'b1; // Held optimal under burst constraint
+                            fsm_state       <= ST_WAIT_SETTLE;
+                        end else begin
+                            // Safe to step DOWN voltage (-1 LSB code)
+                            downscale_gated <= 1'b0;
+                            settled         <= 1'b0;
+                            if (v_code > V_MIN) begin
+                                v_code <= v_code - 1'b1;
+                            end
+                            fsm_state <= ST_UPDATE_STEP;
                         end
-                        fsm_state <= ST_UPDATE_STEP;
                     end else begin
                         // Within hysteresis deadband: Locked and optimal!
-                        settled   <= 1'b1;
-                        fsm_state <= ST_WAIT_SETTLE;
+                        downscale_gated <= 1'b0;
+                        settled         <= 1'b1;
+                        fsm_state       <= ST_WAIT_SETTLE;
                     end
                 end
 
                 ST_UPDATE_STEP: begin
-                    // Step commanded, now return to settling wait
+                    // Voltage code updated: trigger hardware slew-settling lock
+                    slew_locked    <= 1'b1;
+                    slew_counter   <= 4'd0;
                     settle_counter <= 8'd0;
                     fsm_state      <= ST_WAIT_SETTLE;
                 end
 
                 ST_EMERGENCY: begin
                     // Held in emergency until margin recovered AND analog rail has settled
-                    v_code  <= V_MAX;
-                    settled <= 1'b0;
+                    v_code          <= V_MAX;
+                    settled         <= 1'b0;
+                    slew_locked     <= 1'b1;
+                    downscale_gated <= 1'b0;
                     if (margin_code_in > {MARGIN_WIDTH{1'b0}}) begin
                         if (settle_counter >= (SETTLE_CYCLES * 2)) begin
                             settle_counter <= 8'd0;
+                            slew_counter   <= 4'd0;
+                            slew_locked    <= 1'b0;
                             timing_hazard  <= 1'b0; // Clear hazard once safely stabilized
                             fsm_state      <= ST_WAIT_SETTLE;
                         end else begin
@@ -149,6 +200,7 @@ module avs_controller #(
                         // Keep asserting hazard as long as margin is 0
                         timing_hazard  <= 1'b1;
                         settle_counter <= 8'd0;
+                        slew_counter   <= 4'd0;
                     end
                 end
 

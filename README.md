@@ -430,6 +430,8 @@ The verification suite can be executed using the unified Makefile:
 | `dac_voltage_code`| Output | $V_{DD,1V8}$ | 5 | Output voltage code driving reference DAC |
 | `timing_hazard`| Output | $V_{DD,1V8}$ | 1 | Asserted during acute timing margin collapse |
 | `loop_settled` | Output | $V_{DD,1V8}$ | 1 | Asserted when margin is within target hysteresis deadband |
+| `slew_locked` | Output | $V_{DD,1V8}$ | 1 | Asserted during analog rail voltage transition ($\tau_{\mathrm{settle}} \ge 26.6\text{ ns}$) |
+| `downscale_gated`| Output | $V_{DD,1V8}$ | 1 | Asserted when voltage downscaling is inhibited by active compute burst |
 | `fsm_state_out`| Output | $V_{DD,1V8}$ | 3 | Exposed FSM state for system observability |
 | `load_enable` | Input | $V_{DD,1V8}$ | 1 | Enables digital MAC computation (level-shifted into core) |
 | `stress_mode` | Input | $V_{DD,1V8}$ | 1 | Enables LFSR dynamic compute burst for transient load step |

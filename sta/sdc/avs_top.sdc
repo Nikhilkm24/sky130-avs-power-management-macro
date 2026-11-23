@@ -42,8 +42,8 @@ set_false_path -from [get_ports rst_n]
 # Controller domain I/O delays
 set_input_delay  -clock clk_io -max 5.0 [get_ports {avs_enable manual_code* target_margin*}]
 set_input_delay  -clock clk_io -min 1.0 [get_ports {avs_enable manual_code* target_margin*}]
-set_output_delay -clock clk_io -max 5.0 [get_ports {dac_voltage_code* timing_hazard loop_settled fsm_state_out*}]
-set_output_delay -clock clk_io -min 1.0 [get_ports {dac_voltage_code* timing_hazard loop_settled fsm_state_out*}]
+set_output_delay -clock clk_io -max 5.0 [get_ports {dac_voltage_code* timing_hazard loop_settled slew_locked downscale_gated fsm_state_out*}]
+set_output_delay -clock clk_io -min 1.0 [get_ports {dac_voltage_code* timing_hazard loop_settled slew_locked downscale_gated fsm_state_out*}]
 
 # Core domain I/O delays
 set_input_delay  -clock clk_core -max 2.0 [get_ports {load_enable stress_mode operand_a* operand_b*}]

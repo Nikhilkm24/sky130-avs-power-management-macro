@@ -31,6 +31,8 @@ module avs_system_top #(
     output wire [CODE_WIDTH-1:0]   dac_voltage_code,// 5-bit code to Analog Reference DAC
     output wire                    timing_hazard,   // Emergency hazard alarm
     output wire                    loop_settled,    // Loop locked inside target deadband
+    output wire                    slew_locked,     // Asserted during analog rail voltage transition
+    output wire                    downscale_gated, // Asserted when downscaling suppressed by burst
     output wire [2:0]              fsm_state_out,   // Controller state
 
     // Digital Load Controls & Data Ports
@@ -104,16 +106,30 @@ module avs_system_top #(
     wire [31:0]             mac_result_ls;
     wire                    activity_pulse_ls;
     wire                    path_select_ls;
+    wire                    workload_burst_ls;
 
-    level_shifter_lh #(.WIDTH(MARGIN_WIDTH)) u_ls_cpm  (.in_low(cpm_margin_core),    .out_high(cpm_margin_ls));
-    level_shifter_lh #(.WIDTH(1))            u_ls_val  (.in_low(cpm_valid_core),     .out_high(cpm_valid_ls));
-    level_shifter_lh #(.WIDTH(32))           u_ls_mac  (.in_low(mac_result_core),    .out_high(mac_result_ls));
-    level_shifter_lh #(.WIDTH(1))            u_ls_act  (.in_low(activity_pulse_core),.out_high(activity_pulse_ls));
-    level_shifter_lh #(.WIDTH(1))            u_ls_path (.in_low(path_select_core),   .out_high(path_select_ls));
+    level_shifter_lh #(.WIDTH(MARGIN_WIDTH)) u_ls_cpm   (.in_low(cpm_margin_core),    .out_high(cpm_margin_ls));
+    level_shifter_lh #(.WIDTH(1))            u_ls_val   (.in_low(cpm_valid_core),     .out_high(cpm_valid_ls));
+    level_shifter_lh #(.WIDTH(32))           u_ls_mac   (.in_low(mac_result_core),    .out_high(mac_result_ls));
+    level_shifter_lh #(.WIDTH(1))            u_ls_act   (.in_low(activity_pulse_core),.out_high(activity_pulse_ls));
+    level_shifter_lh #(.WIDTH(1))            u_ls_path  (.in_low(path_select_core),   .out_high(path_select_ls));
+    level_shifter_lh #(.WIDTH(1))            u_ls_burst (.in_low(workload_burst_core),.out_high(workload_burst_ls));
 
     assign mac_result          = mac_result_ls;
     assign core_activity_pulse = activity_pulse_ls;
     assign cpm_path_select     = path_select_ls;
+
+    // --------------------------------------------------------------------------
+    // Workload Activity Burst Synchronizer (VDD_CORE -> VDD_1V8 / clk_io)
+    // --------------------------------------------------------------------------
+    reg [1:0] burst_sync_io;
+    always @(posedge clk_io or negedge rst_n) begin
+        if (!rst_n)
+            burst_sync_io <= 2'b00;
+        else
+            burst_sync_io <= {burst_sync_io[0], workload_burst_ls};
+    end
+    wire activity_burst_ctrl = burst_sync_io[1];
 
     // --------------------------------------------------------------------------
     // Coherent REQ/ACK Handshake Synchronizer: Safe crossing of CPM margin into Controller Domain
@@ -138,23 +154,27 @@ module avs_system_top #(
     // Instantiation: AVS Controller FSM (VDD_1V8 Domain)
     // --------------------------------------------------------------------------
     avs_controller #(
-        .CODE_WIDTH    (CODE_WIDTH),
-        .MARGIN_WIDTH  (MARGIN_WIDTH),
-        .SETTLE_CYCLES (16),
-        .V_MIN         (5'd0),
-        .V_MAX         (5'd31),
-        .V_INIT        (5'd31)
+        .CODE_WIDTH        (CODE_WIDTH),
+        .MARGIN_WIDTH      (MARGIN_WIDTH),
+        .SLEW_LOCK_CYCLES  (2),
+        .SETTLE_CYCLES     (16),
+        .V_MIN             (5'd0),
+        .V_MAX             (5'd31),
+        .V_INIT            (5'd31)
     ) u_ctrl (
-        .clk_ctrl       (clk_io),
-        .rst_n          (rst_n),
-        .avs_enable     (avs_enable),
-        .manual_code    (manual_code),
-        .target_margin  (target_margin),
-        .margin_code_in (synchronized_margin),
-        .v_code         (dac_voltage_code),
-        .timing_hazard  (timing_hazard),
-        .settled        (loop_settled),
-        .fsm_state      (fsm_state_out)
+        .clk_ctrl          (clk_io),
+        .rst_n             (rst_n),
+        .avs_enable        (avs_enable),
+        .activity_burst    (activity_burst_ctrl),
+        .manual_code       (manual_code),
+        .target_margin     (target_margin),
+        .margin_code_in    (synchronized_margin),
+        .v_code            (dac_voltage_code),
+        .timing_hazard     (timing_hazard),
+        .settled           (loop_settled),
+        .slew_locked       (slew_locked),
+        .downscale_gated   (downscale_gated),
+        .fsm_state         (fsm_state_out)
     );
 
 endmodule

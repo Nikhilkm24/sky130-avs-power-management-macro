@@ -24,6 +24,8 @@ module tb_avs_top;
     wire [4:0]  dac_voltage_code;
     wire        timing_hazard;
     wire        loop_settled;
+    wire        slew_locked;
+    wire        downscale_gated;
     wire [2:0]  fsm_state_out;
     wire [31:0] mac_result;
     wire        core_activity_pulse;
@@ -44,6 +46,8 @@ module tb_avs_top;
         .dac_voltage_code    (dac_voltage_code),
         .timing_hazard       (timing_hazard),
         .loop_settled        (loop_settled),
+        .slew_locked         (slew_locked),
+        .downscale_gated     (downscale_gated),
         .fsm_state_out       (fsm_state_out),
         .load_enable         (load_enable),
         .stress_mode         (stress_mode),
@@ -104,8 +108,8 @@ module tb_avs_top;
         $display("[T=%0t] Sentinel Verified: cpm_path_select successfully switched to carry replica (%0b)",
                  $time, cpm_path_select);
         repeat (190) @(posedge clk_core);
-        $display("[T=%0t] MAC Result (Stress mode): 0x%08h | Loop Settled = %0b",
-                 $time, mac_result, loop_settled);
+        $display("[T=%0t] MAC Result (Stress mode): 0x%08h | Loop Settled = %0b | Slew Locked = %0b | Downscale Gated = %0b",
+                 $time, mac_result, loop_settled, slew_locked, downscale_gated);
 
         // De-stress
         stress_mode = 0;

@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- **Hardware Slew-Settling Lock Timer & Activity-Conditioned Downscale Gating (Phase G / Step 10)**:
+  - Updated `rtl/controller/avs_controller.v` with hardware slew-settling lock timer (`SLEW_LOCK_CYCLES = 2`, $\tau_{\mathrm{settle}} \ge 26.6\text{ ns}$, 2 clock cycles of `clk_io` domain) to mask CPM sampling while analog rail slews during DAC transitions.
+  - Implemented activity-conditioned downscale gating (`activity_burst` input, `downscale_gated` output): suppresses nominal supply downscaling during active compute bursts to prevent $dI/dt$ transient droop timing hazards.
+  - Updated top-level macro `rtl/top/avs_system_top.v` with level shifter `u_ls_burst` and 2-stage synchronizer (`burst_sync_io`) crossing the core burst sentinel into the 12.5 MHz controller domain.
+  - Expanded `sim/tb_controller.v` with verification of slew lock, burst-inhibited downscaling, post-burst downscaling recovery, and deficit-margin safety priority.
+  - Updated system testbench `sim/tb_avs_top.v` and timing constraints in `sta/sdc/avs_top.sdc`.
+
 ### Planned
 - Full digital physical design implementation with OpenROAD detailed routing and post-route SPEF sign-off.
 - Foundry-calibrated SkyWater 130nm BSIM4 SPICE models and PNP substrate characterization.

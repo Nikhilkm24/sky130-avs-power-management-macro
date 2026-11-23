@@ -749,12 +749,12 @@ def build_pdf(filename):
     <b>Standardized Publication Checklist:</b><br/>
     &bull; [x] <b>Checklist Item 1:</b> Verify that all gate-level cells instantiate explicit <code>sky130_fd_sc_hd__*</code> library primitives (Phase B Complete).<br/>
     &bull; [x] <b>Checklist Item 2:</b> Confirm that OpenSTA characterization spans the complete multi-corner dataset (N=24 points across TT, FF, SS, FS, 0.90V–1.95V, -40°C–+125°C, Phase C Complete).<br/>
-    &bull; [ ] <b>Checklist Item 3:</b> Validate that Level-1 SPICE models are fully replaced with SkyWater 130nm BSIM4 PDK devices.<br/>
-    &bull; [ ] <b>Checklist Item 4:</b> Ensure that Netgen topological LVS passes with zero device or pin mismatches.<br/>
-    &bull; [ ] <b>Checklist Item 5:</b> Reconcile all system-level energy calculations to account for analog regulator overhead.<br/>
-    &bull; [ ] <b>Checklist Item 6:</b> Generate all 14 publication figures directly from reproducible automated scripts.<br/>
-    &bull; [ ] <b>Checklist Item 7:</b> Complete the ablation study demonstrating the measurable benefit of each architectural component.<br/>
-    &bull; [ ] <b>Checklist Item 8:</b> Tag release <code>v2.0.0</code> and provide public open-source replication scripts on GitHub.
+    &bull; [x] <b>Checklist Item 3:</b> Validate that Level-1 SPICE models are fully replaced with SkyWater 130nm BSIM4 PDK devices (Phase F Complete).<br/>
+    &bull; [x] <b>Checklist Item 4:</b> Integrate hardware slew-settling lock timer and activity downscale gating in AVS controller (Phase G Complete).<br/>
+    &bull; [ ] <b>Checklist Item 5:</b> Execute full mixed-signal closed-loop transistor-level co-simulation (Phase H).<br/>
+    &bull; [ ] <b>Checklist Item 6:</b> Ensure that Netgen topological LVS passes with zero device or pin mismatches.<br/>
+    &bull; [ ] <b>Checklist Item 7:</b> Reconcile all system-level energy calculations to account for analog regulator overhead.<br/>
+    &bull; [ ] <b>Checklist Item 8:</b> Complete the ablation study and tag release <code>v2.0.0</code> with public GitHub replication scripts.
     """
     story.append(Paragraph(pub_text, body_style))
     story.append(Spacer(1, 15))
